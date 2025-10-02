@@ -2,18 +2,41 @@ using UnityEngine;
 
 public class enemyAI : MonoBehaviour
 {
+    public enum EnemyType { Melee, Ranged, Bomber, DotDropper }
+
+    public EnemyType type = EnemyType.Melee;
+
+    [Header("Movement")]
     [SerializeField] float moveSpeed = 3f;
     [SerializeField] float stopDistance = 0.6f;
+    [SerializeField] float pathRefresh = 0.1f;
+
+    [Header("Shared Combat Stats")]
     [SerializeField] int damage = 1;
-    [SerializeField] float attackRange = 0.75f;
+    [SerializeField] float attackRange = 0.8f;
     [SerializeField] float attackCooldown = 0.6f;
     [SerializeField] LayerMask playerMask;
     [SerializeField] Transform hitOrigin;
     [SerializeField] SpriteRenderer sprite;
 
+    [Header("Ranged")]
+    [SerializeField] Projectile2D projectilePrefab;
+    [SerializeField] float projectileSpeed = 10f;
+
+    [Header("Bomber")]
+    [SerializeField] float explodeRadius = 1.25f;
+    [SerializeField] int explodeDamage = 2;
+
+    [Header("DoT Dropper")]
+    [SerializeField] DoTZone2D dotZonePrefab;
+    [SerializeField] float dropInterval = 2.0f;
+
     Rigidbody2D rb;
     Transform player;
     float cdTimer;
+    float dropTimer;
+    float pathTimer;
+    bool facingRight;
 
     private void Awake()
     {
@@ -30,18 +53,38 @@ public class enemyAI : MonoBehaviour
 
     void Update()
     {
-        cdTimer = Time.deltaTime;
+        if (!player) return;
 
-        if (sprite && player)
-        {
-            float dx = player.position.x - transform.position.x;
-            if (Mathf.Abs(dx) < 0.02f) sprite.flipX = dx < 0f;
-        }
+        cdTimer -= Time.deltaTime;
+        dropTimer -= Time.deltaTime;
+        pathTimer -= Time.deltaTime;
 
-        if (player && cdTimer <= 0f && inAttackRange())
+        //Face target
+        float dx = player.position.x - transform.position.x;
+        if (dx > 0.02f && !facingRight) SetFacing(true);
+        else if (dx < -0.02f && facingRight) SetFacing(false);
+
+        //Attack/Ability by type
+        float dist = Vector2.Distance(transform.position, player.position);
+
+        switch (type)
         {
-            tryHitPlayer();
-            cdTimer = attackCooldown;
+            case EnemyType.Melee:
+                if (cdTimer <= 0f && dist <= attackRange) { MeleeHit(); cdTimer = attackCooldown; }
+                break;
+
+            case EnemyType.Ranged:
+                if (cdTimer <= 0f && dist <= attackRange) { ShootProjectile(); cdTimer = attackCooldown; }
+                break;
+
+            case EnemyType.Bomber:
+                if (dist <= Mathf.Max(attackRange, explodeRadius * 0.9f)) { Explode(); }
+                break;
+
+            case EnemyType.DotDropper:
+                if (dropTimer <= 0f) { DropDoT(); dropTimer = dropInterval; }
+                if (cdTimer <= 0f && dist <= attackRange) { MeleeHit(); cdTimer = attackCooldown; }
+                break;
         }
     }
 
@@ -49,36 +92,74 @@ public class enemyAI : MonoBehaviour
     {
         if (!player) return;
 
-        Vector2 toPlayer = (player.position - transform.position);
-        float dist = toPlayer.magnitude;
-        if (dist > stopDistance)
+        if (pathTimer <= 0f)
         {
-            Vector2 dir = toPlayer.normalized;
-            Vector2 targetPos = (Vector2)transform.position + dir * moveSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(targetPos);
-        }
-        else
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
-    }
-
-    bool inAttackRange()
-    {
-        Collider2D hit = Physics2D.OverlapCircle(hitOrigin.position, attackRange, playerMask);
-        return hit != null;
-    }
-
-    void tryHitPlayer()
-    {
-        Collider2D hit = Physics2D.OverlapCircle(hitOrigin.position, attackRange, playerMask);
-        if (hit)
-        {
-            health targetHealth = hit.GetComponent<health>();
-            if (targetHealth)
+            pathTimer = pathRefresh;
+            Vector2 toPlayer = (player.position - transform.position);
+            float dist = toPlayer.magnitude;
+            if (dist > stopDistance)
             {
-                targetHealth.ApplyDamge(damage);
+                Vector2 dir = toPlayer.normalized;
+                rb.linearVelocity = dir * moveSpeed;
             }
+            else
+            {
+                rb.linearVelocity = Vector2.zero;
+            }
+        }
+    }
+
+    void MeleeHit()
+    {
+        Collider2D hit = Physics2D.OverlapCircle(hitOrigin.position, attackRange, playerMask.value == 0 ? ~0 : playerMask);
+        if (!hit) return;
+
+        var hp = hit.GetComponent<health>();
+        if (hp) hp.ApplyDamge(damage);
+    }
+
+    void ShootProjectile()
+    {
+        if (!projectilePrefab) return;
+        Vector2 dir = (player.position - hitOrigin.position).normalized;
+        var proj = Instantiate(projectilePrefab, hitOrigin.position, Quaternion.identity);
+        proj.Launch(dir * projectileSpeed, damage, playerMask);
+    }
+
+    void Explode()
+    {
+        var hits = Physics2D.OverlapCircleAll(transform.position, explodeRadius, playerMask.value == 0 ? ~0 : playerMask);
+        foreach (var h in hits)
+        {
+            var hp = h.GetComponent<health>();
+            if (hp) hp.ApplyDamge(explodeDamage);
+        }
+        Destroy(gameObject);
+    }
+
+    void DropDoT()
+    {
+        if (!dotZonePrefab) return;
+        Instantiate(dotZonePrefab, transform.position, Quaternion.identity);
+    }
+
+    void SetFacing(bool right)
+    {
+        facingRight = right;
+
+        Vector3 s = transform.localScale;
+        s.x = Mathf.Abs(s.x) * (right ? 1f : -1f);
+        transform.localScale = s;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(hitOrigin ? hitOrigin.position : transform.position, attackRange);
+        if (type == EnemyType.Bomber)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, explodeRadius);
         }
     }
 }
