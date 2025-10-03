@@ -382,7 +382,7 @@ MonoBehaviour:
   moveSpeed: 1
   stopDistance: 5
   pathRefresh: 0.1
-  damage: 1
+  damage: 20
   attackRange: 5
   attackCooldown: 1
   playerMask:
@@ -461,7 +461,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.013659239, y: -0.23675865}
+  m_Offset: {x: -0.013659239, y: -0.117141396}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -471,7 +471,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.663074, y: 0.10760188}
+  m_Size: {x: 0.663074, y: 0.3468364}
   m_EdgeRadius: 0
 --- !u!50 &584042595
 Rigidbody2D:
@@ -742,7 +742,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::health
   maxHP: 100
-  destroyOnDeath: 0
+  destroyOnDeath: 1
   healable: 1
 --- !u!61 &701228748
 BoxCollider2D:
@@ -778,7 +778,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.000000059604645, y: -0.32779813}
+  m_Offset: {x: 0.000000059604645, y: -0.29393244}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -788,7 +788,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.41605145, y: 0.0369353}
+  m_Size: {x: 0.41605145, y: 0.10466668}
   m_EdgeRadius: 0
 --- !u!95 &701228749
 Animator:
@@ -1336,6 +1336,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4076143524810268447, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: m_Size.x
+      value: 0.5558026
+      objectReference: {fileID: 0}
+    - target: {fileID: 4076143524810268447, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: m_Size.y
+      value: 0.3611621
+      objectReference: {fileID: 0}
+    - target: {fileID: 4076143524810268447, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: m_Offset.x
+      value: -0.09278047
+      objectReference: {fileID: 0}
+    - target: {fileID: 4076143524810268447, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: m_Offset.y
+      value: -0.20085905
+      objectReference: {fileID: 0}
     - target: {fileID: 4076143524810268447, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
       propertyPath: m_ExcludeLayers.m_Bits
       value: 64
