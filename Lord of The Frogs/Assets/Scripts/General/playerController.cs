@@ -6,11 +6,11 @@ using UnityEngine.Tilemaps;
 public class playerController : MonoBehaviour, IDamage
 {
     [SerializeField] Transform attackOrigin;
-    [SerializeField] float attackRange = 0.75f;
+    [SerializeField] float attackRange = 1.4f;
+    [SerializeField] float attackArcDeg = 110f;
     [SerializeField] int attackDamage = 20;
-    [SerializeField] LayerMask enemyMask;
     [SerializeField] float attackCooldown = 0.25f;
-    float attackTimer;
+    [SerializeField] LayerMask enemyMask;
 
     public float moveSpeed;
     
@@ -20,7 +20,9 @@ public class playerController : MonoBehaviour, IDamage
     private SpriteRenderer sprite;
     private health hp;
 
+    float attackTimer;
     bool facingRight = true;
+    Vector2 faceDir = Vector2.right;
 
     void Awake()
     {
@@ -35,11 +37,17 @@ public class playerController : MonoBehaviour, IDamage
         Move();
         Animate();
 
-        attackTimer -= Time.deltaTime;
-        if (Input.GetMouseButtonDown(0) && attackTimer <= 0)
+        if (rb.linearVelocity.sqrMagnitude > 0.001f)
         {
-            AttackOnce();
+            faceDir = rb.linearVelocity.normalized;
+        }
+
+        attackTimer -= Time.deltaTime;
+        if (Input.GetMouseButtonDown(0) && attackTimer <= 0f)
+        {
+            AttackCone();
             attackTimer = attackCooldown;
+            if (anim) anim.SetTrigger("Attack");
         }
     }
 
@@ -87,5 +95,49 @@ public class playerController : MonoBehaviour, IDamage
         if (hp) hp.ApplyDamge(attackDamage);
 
         if (anim) anim.SetTrigger("Attack");
+    }
+
+    void AttackCone()
+    {
+        var hits = Physics2D.OverlapCircleAll(transform.position, attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value);
+        if (hits == null || hits.Length == 0) return;
+
+        float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
+
+        foreach (var h in hits)
+        {
+            Vector2 to = (Vector2)h.bounds.center - (Vector2)transform.position;
+            float dist = to.magnitude;
+            if (dist <= 0.001f) continue;
+
+            Vector2 dir = to / dist;
+
+            if (Vector2.Dot(dir, faceDir) >= cosHalf)
+            {
+                var hp = h.GetComponent<health>();
+                if (hp) hp.ApplyDamge(attackDamage);
+            }
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        // draw cone rays
+        Vector3 center = transform.position;
+        Vector2 f = faceDir.sqrMagnitude < 0.001f ? Vector2.right : faceDir.normalized;
+        float half = 0.5f * attackArcDeg * Mathf.Deg2Rad;
+        Vector2 left = new Vector2(
+            f.x * Mathf.Cos(half) - f.y * Mathf.Sin(half),
+            f.x * Mathf.Sin(half) + f.y * Mathf.Cos(half)
+        );
+        Vector2 right = new Vector2(
+            f.x * Mathf.Cos(-half) - f.y * Mathf.Sin(-half),
+            f.x * Mathf.Sin(-half) + f.y * Mathf.Cos(-half)
+        );
+        Gizmos.DrawLine(center, center + (Vector3)(left * attackRange));
+        Gizmos.DrawLine(center, center + (Vector3)(right * attackRange));
     }
 }
