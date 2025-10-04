@@ -17,6 +17,6 @@ public class DoTZone2D : MonoBehaviour
         timer = tick;
 
         var hp = other.GetComponent<health>();
-        if (hp) hp.ApplyDamge(Mathf.RoundToInt(dps * tick));
+        if (hp) hp.ApplyDamage(Mathf.RoundToInt(dps * tick));
     }
 }

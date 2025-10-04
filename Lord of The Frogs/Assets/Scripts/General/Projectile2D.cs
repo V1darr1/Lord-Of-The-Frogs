@@ -25,7 +25,7 @@ public class Projectile2D : MonoBehaviour
             return;
 
         var hp = other.GetComponent<health>();
-        if (hp) hp.ApplyDamge(dmg);
+        if (hp) hp.ApplyDamage(dmg);
 
         Destroy(gameObject);
     }
