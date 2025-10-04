@@ -7,6 +7,10 @@ public class health : MonoBehaviour, IDamage
     [SerializeField] private bool healable = false;
 
     private float _hp;
+
+    public float CurrentHP => _hp;
+    public float MaxHP => maxHP;
+
     public bool isAlive => _hp > 0f;
 
     void Awake()
@@ -14,7 +18,7 @@ public class health : MonoBehaviour, IDamage
         _hp = Mathf.Max(1f, maxHP);
     }
 
-    public void ApplyDamge(int amount)
+    public void ApplyDamage(int amount)
     {
         if (!isAlive) return;
         _hp -= amount;

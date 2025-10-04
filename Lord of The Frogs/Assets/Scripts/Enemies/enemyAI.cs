@@ -115,7 +115,7 @@ public class enemyAI : MonoBehaviour
         if (!hit) return;
 
         var hp = hit.GetComponent<health>();
-        if (hp) hp.ApplyDamge(damage);
+        if (hp) hp.ApplyDamage(damage);
     }
 
     void ShootProjectile()
@@ -132,7 +132,7 @@ public class enemyAI : MonoBehaviour
         foreach (var h in hits)
         {
             var hp = h.GetComponent<health>();
-            if (hp) hp.ApplyDamge(explodeDamage);
+            if (hp) hp.ApplyDamage(explodeDamage);
         }
         Destroy(gameObject);
     }

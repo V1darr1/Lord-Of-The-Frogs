@@ -1,78 +1,132 @@
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Tilemaps;
 
-public class playerController : MonoBehaviour, IDamage
+public class PlayerControllerCombat2D : MonoBehaviour, IDamage
 {
-    [SerializeField] Transform attackOrigin;
-    [SerializeField] float attackRange = 1.4f;
-    [SerializeField] float attackArcDeg = 110f;
+    [Header("Move")]
+    [SerializeField] float moveSpeed = 5f;
+
+    [Header("Melee (mouse-aimed cone)")]
+    [SerializeField] float attackRange = 1.6f;     // radius of cone
+    [SerializeField] float attackArcDeg = 110f;    // cone width
     [SerializeField] int attackDamage = 20;
     [SerializeField] float attackCooldown = 0.25f;
+    [SerializeField] float knockback = 6f;
     [SerializeField] LayerMask enemyMask;
 
-    public float moveSpeed;
-    
-    private Animator anim;
-    private Vector2 moveDir;
-    private Rigidbody2D rb;
-    private SpriteRenderer sprite;
-    private health hp;
+    [Header("Optional")]
+    [SerializeField] Transform attackOrigin;       // if null, uses player position
+    [SerializeField] string attackTrigger = "Attack";
+    [SerializeField] bool rotateAttackOrigin = true;
+
+    Rigidbody2D rb;
+    Animator anim;
+    health hp;
+    Camera cam;
 
     float attackTimer;
     bool facingRight = true;
-    Vector2 faceDir = Vector2.right;
+    Vector2 moveDir;
+    Vector2 faceDir = Vector2.right;               // ALWAYS driven by mouse
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        sprite = GetComponent<SpriteRenderer>();
         hp = GetComponent<health>();
+        cam = Camera.main;
     }
 
     void Update()
     {
-        Move();
-        Animate();
+        UpdateAimFromMouse();        // <— mouse controls facing
+        HandleMove();
+        HandleAttack();
+        UpdateAnim();
+    }
 
-        if (rb.linearVelocity.sqrMagnitude > 0.001f)
-        {
-            faceDir = rb.linearVelocity.normalized;
-        }
+    // ---------- Mouse Aim ----------
+    void UpdateAimFromMouse()
+    {
+        if (!cam) cam = Camera.main;
+        Vector3 m = cam.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 toMouse = (Vector2)m - (Vector2)transform.position;
 
-        attackTimer -= Time.deltaTime;
-        if (Input.GetMouseButtonDown(0) && attackTimer <= 0f)
+        if (toMouse.sqrMagnitude > 0.0001f)
+            faceDir = toMouse.normalized;
+
+        // Flip entire character so children & hitboxes follow
+        if (faceDir.x > 0.02f && !facingRight) SetFacing(true);
+        else if (faceDir.x < -0.02f && facingRight) SetFacing(false);
+
+        // rotate attack origin
+        if (rotateAttackOrigin && attackOrigin)
         {
-            AttackCone();
-            attackTimer = attackCooldown;
-            if (anim) anim.SetTrigger("Attack");
+            float ang = Mathf.Atan2(faceDir.y, faceDir.x) * Mathf.Rad2Deg;
+            attackOrigin.rotation = Quaternion.Euler(0, 0, ang);
         }
     }
 
-    private void Move()
+    void SetFacing(bool right)
+    {
+        facingRight = right;
+        var s = transform.localScale;
+        s.x = Mathf.Abs(s.x) * (right ? 1f : -1f);
+        transform.localScale = s;
+    }
+
+    // ---------- Movement ----------
+    void HandleMove()
     {
         float hor = Input.GetAxisRaw("Horizontal");
         float ver = Input.GetAxisRaw("Vertical");
 
         moveDir = new Vector2(hor, ver).normalized;
         rb.linearVelocity = moveDir * moveSpeed;
-
-        if (hor > 0.02f && !facingRight) SetFacing(true);
-        else if (hor < -0.02f && facingRight) SetFacing(false);
     }
 
-    void SetFacing(bool right)
+    // ---------- Attack ----------
+    void HandleAttack()
     {
-        facingRight = right;
-
-        Vector3 s = transform.localScale;
-        s.x = Mathf.Abs(s.x) * (right ? 1f : -1f);
-        transform.localScale = s;
+        attackTimer -= Time.deltaTime;
+        if (Input.GetMouseButtonDown(0) && attackTimer <= 0f)
+        {
+            AttackCone();
+            attackTimer = attackCooldown;
+            if (anim && !string.IsNullOrEmpty(attackTrigger))
+                anim.SetTrigger(attackTrigger);
+        }
     }
 
-    private void Animate()
+    void AttackCone()
+    {
+        Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
+
+        // Collect by radius first, then filter by angle
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            origin, attackRange,
+            enemyMask.value == 0 ? ~0 : enemyMask.value
+        );
+        if (hits == null || hits.Length == 0) return;
+
+        float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
+
+        foreach (var h in hits)
+        {
+            if (!h) continue;
+            Vector2 to = (Vector2)h.bounds.center - origin;
+            float mag = to.magnitude;
+            if (mag < 0.0001f) continue;
+
+            Vector2 dir = to / mag;
+            if (Vector2.Dot(dir, faceDir) >= cosHalf)
+            {
+                DamageInvoker.ApplyHit(h.gameObject, attackDamage, origin, knockback);
+            }
+        }
+    }
+
+    // ---------- Animation ----------
+    void UpdateAnim()
     {
         if (!anim) return;
         anim.SetFloat("Movement X", moveDir.x);
@@ -80,55 +134,22 @@ public class playerController : MonoBehaviour, IDamage
         anim.SetFloat("Speed", rb.linearVelocity.sqrMagnitude);
     }
 
-    public void ApplyDamge(int amount)
+    // ---------- Taking damage ----------
+    public void ApplyDamage(int amount)
     {
-        if (hp) hp.ApplyDamge(amount);
+        if (hp) hp.ApplyDamage(amount);
     }
 
-    void AttackOnce()
-    {
-        var hit = Physics2D.OverlapCircle(attackOrigin ? attackOrigin.position : transform.position,
-                                          attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value);
-        if (!hit) return;
-
-        var hp = hit.GetComponent<health>();
-        if (hp) hp.ApplyDamge(attackDamage);
-
-        if (anim) anim.SetTrigger("Attack");
-    }
-
-    void AttackCone()
-    {
-        var hits = Physics2D.OverlapCircleAll(transform.position, attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value);
-        if (hits == null || hits.Length == 0) return;
-
-        float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
-
-        foreach (var h in hits)
-        {
-            Vector2 to = (Vector2)h.bounds.center - (Vector2)transform.position;
-            float dist = to.magnitude;
-            if (dist <= 0.001f) continue;
-
-            Vector2 dir = to / dist;
-
-            if (Vector2.Dot(dir, faceDir) >= cosHalf)
-            {
-                var hp = h.GetComponent<health>();
-                if (hp) hp.ApplyDamge(attackDamage);
-            }
-        }
-    }
-
+    // ---------- Gizmos ----------
     void OnDrawGizmosSelected()
     {
+        Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(origin, attackRange);
 
-        // draw cone rays
-        Vector3 center = transform.position;
         Vector2 f = faceDir.sqrMagnitude < 0.001f ? Vector2.right : faceDir.normalized;
         float half = 0.5f * attackArcDeg * Mathf.Deg2Rad;
+
         Vector2 left = new Vector2(
             f.x * Mathf.Cos(half) - f.y * Mathf.Sin(half),
             f.x * Mathf.Sin(half) + f.y * Mathf.Cos(half)
@@ -137,7 +158,7 @@ public class playerController : MonoBehaviour, IDamage
             f.x * Mathf.Cos(-half) - f.y * Mathf.Sin(-half),
             f.x * Mathf.Sin(-half) + f.y * Mathf.Cos(-half)
         );
-        Gizmos.DrawLine(center, center + (Vector3)(left * attackRange));
-        Gizmos.DrawLine(center, center + (Vector3)(right * attackRange));
+        Gizmos.DrawLine(origin, origin + left * attackRange);
+        Gizmos.DrawLine(origin, origin + right * attackRange);
     }
 }
