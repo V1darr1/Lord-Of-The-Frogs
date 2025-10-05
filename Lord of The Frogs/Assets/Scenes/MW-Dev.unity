@@ -477,6 +477,7 @@ GameObject:
   - component: {fileID: 701228745}
   - component: {fileID: 701228750}
   - component: {fileID: 701228749}
+  - component: {fileID: 701228750}
   - component: {fileID: 701228744}
   - component: {fileID: 701228743}
   - component: {fileID: 701228748}
@@ -706,6 +707,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 701228742}
   m_Enabled: 1
   m_EditorHideFlags: 0
+<<<<<<< Updated upstream
   m_Script: {fileID: 11500000, guid: f556832ace9ac524d925f694d29ed8b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResourceBarUI
@@ -748,6 +750,19 @@ CapsuleCollider2D:
   m_Offset: {x: 0.018450916, y: -0.03533855}
   m_Size: {x: 0.35368955, y: 0.62894505}
   m_Direction: 0
+=======
+  m_Script: {fileID: 11500000, guid: 284d47e64f93b4340b97349d156bf63b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeeleSwing
+  damage: 15
+  knockback: 6
+  range: 1.8
+  halfAngle: 35
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 0
+  cooldown: 0.3
+>>>>>>> Stashed changes
 --- !u!1 &894984976
 GameObject:
   m_ObjectHideFlags: 0
