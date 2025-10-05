@@ -26,6 +26,9 @@ public class enemyAI : MonoBehaviour
     [Header("Bomber")]
     [SerializeField] float explodeRadius = 1.25f;
     [SerializeField] int explodeDamage = 2;
+    [SerializeField] float primeRadius;
+    [SerializeField] float fuseTime;
+    [SerializeField] float bomberSpeedBoost;
 
     [Header("DoT Dropper")]
     [SerializeField] DoTZone2D dotZonePrefab;
@@ -37,6 +40,8 @@ public class enemyAI : MonoBehaviour
     float dropTimer;
     float pathTimer;
     bool facingRight;
+    bool primed;
+    float fuse;
 
     private void Awake()
     {
@@ -78,7 +83,14 @@ public class enemyAI : MonoBehaviour
                 break;
 
             case EnemyType.Bomber:
-                if (dist <= Mathf.Max(attackRange, explodeRadius * 0.9f)) { Explode(); }
+                if (dist <= explodeRadius) { Explode(); return; }
+
+                if (!primed && dist <= primeRadius) { primed = true; fuse = fuseTime; }
+                if (primed)
+                {
+                    fuse -= Time.deltaTime;
+                    if (fuse <= 0f) { Explode(); return; }
+                }
                 break;
 
             case EnemyType.DotDropper:
@@ -97,15 +109,19 @@ public class enemyAI : MonoBehaviour
             pathTimer = pathRefresh;
             Vector2 toPlayer = (player.position - transform.position);
             float dist = toPlayer.magnitude;
-            if (dist > stopDistance)
+
+            if (type == EnemyType.Bomber)
             {
-                Vector2 dir = toPlayer.normalized;
-                rb.linearVelocity = dir * moveSpeed;
+                if (dist > 0.05f)
+                {
+                    float spd = moveSpeed * (primed ? bomberSpeedBoost : 1f);
+                    rb.linearVelocity = toPlayer.normalized * spd;
+                }
+                else rb.linearVelocity = Vector2.zero;
+                return;
             }
-            else
-            {
-                rb.linearVelocity = Vector2.zero;
-            }
+            if (dist > stopDistance) rb.linearVelocity = toPlayer.normalized * moveSpeed;
+            else rb.linearVelocity = Vector2.zero;
         }
     }
 
