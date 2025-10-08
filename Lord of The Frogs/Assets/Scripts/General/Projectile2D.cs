@@ -7,9 +7,16 @@ public class Projectile2D : MonoBehaviour
     int dmg;
     LayerMask targetMask;
 
+    [SerializeField] float lifetime = 4f;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void OnEnable()
+    {
+        Destroy(gameObject, lifetime);
     }
 
     public void Launch(Vector2 velocity, int damage, LayerMask target)

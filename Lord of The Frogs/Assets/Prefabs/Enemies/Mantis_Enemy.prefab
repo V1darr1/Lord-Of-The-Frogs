@@ -63,7 +63,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 5, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1231985058024926521}
@@ -81,7 +81,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 724b516bc5c36154390c4fec418de54c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::health
-  maxHP: 125
+  maxHP: 200
   destroyOnDeath: 1
   healable: 0
 --- !u!114 &8111427428643751645
@@ -97,11 +97,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::enemyAI
   type: 0
-  moveSpeed: 2
-  stopDistance: 1.15
+  moveSpeed: 0.75
+  stopDistance: 0.35
   pathRefresh: 0.1
   damage: 10
-  attackRange: 0.5
+  attackRange: 0.38
   attackCooldown: 0.6
   playerMask:
     serializedVersion: 2
@@ -112,6 +112,9 @@ MonoBehaviour:
   projectileSpeed: 0
   explodeRadius: 0
   explodeDamage: 0
+  primeRadius: 0
+  fuseTime: 0
+  bomberSpeedBoost: 0
   dotZonePrefab: {fileID: 0}
   dropInterval: 0
 --- !u!212 &6668552523144609088
