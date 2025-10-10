@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerControllerCombat2D : MonoBehaviour, IDamage
+public class playerController : MonoBehaviour, IDamage
 {
     [Header("Move")]
     [SerializeField] float moveSpeed = 5f;
@@ -9,14 +9,20 @@ public class PlayerControllerCombat2D : MonoBehaviour, IDamage
     [SerializeField] float attackRange = 1.6f;     // radius of cone
     [SerializeField] float attackArcDeg = 110f;    // cone width
     [SerializeField] int attackDamage = 20;
-    [SerializeField] float attackCooldown = 0.25f;
     [SerializeField] float knockback = 6f;
     [SerializeField] LayerMask enemyMask;
 
     [Header("Optional")]
     [SerializeField] Transform attackOrigin;       // if null, uses player position
-    [SerializeField] string attackTrigger = "Attack";
     [SerializeField] bool rotateAttackOrigin = true;
+
+    [Header("Combo")]
+    [SerializeField] int maxCombo = 3;
+    [SerializeField] float comboResetTime = 0.7f;
+    [SerializeField] float inputBufferTime = 0.35f;
+    [SerializeField] float postEndGrace = 0.18f;
+    float lastClickTime = -999f;
+    float lastClickedEndTime = -999f;
 
     Rigidbody2D rb;
     Animator anim;
@@ -28,20 +34,39 @@ public class PlayerControllerCombat2D : MonoBehaviour, IDamage
     Vector2 moveDir;
     Vector2 faceDir = Vector2.right;               // ALWAYS driven by mouse
 
+    int comboStep = 0;
+    bool isAttacking = false;
+    bool canQueueNext = false;
+    bool queued = false;
+    float comboTimer = 0f;
+    float bufferTimer = 0f;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         hp = GetComponent<health>();
         cam = Camera.main;
+
+        if (hp != null)
+            hp.onDeath += OnDeath;
     }
 
     void Update()
     {
-        UpdateAimFromMouse();        // <— mouse controls facing
+        UpdateAimFromMouse();        // <ï¿½ mouse controls facing
         HandleMove();
         HandleAttack();
         UpdateAnim();
+
+        if (comboTimer > 0f) comboTimer -= Time.deltaTime;
+        if (bufferTimer > 0f)
+        {
+            bufferTimer -= Time.deltaTime;
+            if (bufferTimer <= 0f) canQueueNext = false;
+        }
+        if (!isAttacking && comboTimer <= 0f && comboStep > 0)
+            comboStep = 0;
     }
 
     // ---------- Mouse Aim ----------
@@ -77,6 +102,12 @@ public class PlayerControllerCombat2D : MonoBehaviour, IDamage
     // ---------- Movement ----------
     void HandleMove()
     {
+        if (isAttacking)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+        
         float hor = Input.GetAxisRaw("Horizontal");
         float ver = Input.GetAxisRaw("Vertical");
 
@@ -84,17 +115,96 @@ public class PlayerControllerCombat2D : MonoBehaviour, IDamage
         rb.linearVelocity = moveDir * moveSpeed;
     }
 
-    // ---------- Attack ----------
+    // ---------- Attack / Combo ----------
     void HandleAttack()
     {
-        attackTimer -= Time.deltaTime;
-        if (Input.GetMouseButtonDown(0) && attackTimer <= 0f)
+        if (Input.GetMouseButtonDown(0))
         {
-            AttackCone();
-            attackTimer = attackCooldown;
-            if (anim && !string.IsNullOrEmpty(attackTrigger))
-                anim.SetTrigger(attackTrigger);
+            lastClickTime = Time.time;
+            comboTimer = comboResetTime;
+            
+            if (!isAttacking)
+            {
+                if (comboStep == 0 || Time.time - lastClickedEndTime <= postEndGrace)
+                {
+                    comboStep = 1;
+                }
+                
+                PlayComboStep(comboStep);
+            }
+            else if (comboStep < maxCombo)
+            {
+                queued = true;
+            }
         }
+    }
+
+    void PlayComboStep(int step)
+    {
+        isAttacking = true;
+        canQueueNext = false;
+        queued = false;
+        comboTimer = comboResetTime;
+
+        switch (step)
+        {
+            case 1: anim.SetTrigger("Attack1"); break;
+            case 2: anim.SetTrigger("Attack2"); break;
+            case 3: anim.SetTrigger("Attack3"); break;
+        }
+    }
+
+    public void Anim_Hit()
+    {
+        Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2) transform.position;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value);
+
+        if (hits == null || hits.Length == 0) return;
+
+        float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
+
+        foreach (var h in hits)
+        {
+            if (!h) continue;
+            Vector2 to = (Vector2)h.bounds.center - origin;
+            float mag = to.magnitude;
+            if (mag < 0.0001f) continue;
+
+            Vector2 dir = to / mag;
+            if (Vector2.Dot(dir, faceDir) >= cosHalf)
+            {
+                float kb = (comboStep == 3) ? knockback : 0f;
+                DamageInvoker.ApplyHit(h.gameObject, attackDamage, origin, kb);
+            }
+        }
+    }
+
+    public void Anim_QueueWindowOpen() 
+    {
+        canQueueNext = true;
+        bufferTimer = inputBufferTime;
+    }
+
+    public void Anim_AttackEnd()
+    {
+        isAttacking = false;
+        lastClickedEndTime = Time.time;
+
+        if (queued && comboStep < maxCombo)
+        {
+            comboStep++;
+            PlayComboStep(comboStep);
+            return;
+        }
+        if (comboStep < maxCombo && Time.time - lastClickTime <= postEndGrace && comboTimer > 0f)
+        {
+            comboStep++;
+            PlayComboStep(comboStep);
+            return;
+        }
+        if (comboTimer > 0f || comboStep >= maxCombo)
+            comboStep = 0;
     }
 
     void AttackCone()
@@ -138,6 +248,18 @@ public class PlayerControllerCombat2D : MonoBehaviour, IDamage
     public void ApplyDamage(int amount)
     {
         if (hp) hp.ApplyDamage(amount);
+    }
+
+    void OnDeath()
+    {
+        rb.linearVelocity = Vector2.zero;
+        moveDir = Vector2.zero;
+
+        isAttacking = false;
+
+        anim.SetTrigger("Die");
+
+        this.enabled = false;
     }
 
     // ---------- Gizmos ----------

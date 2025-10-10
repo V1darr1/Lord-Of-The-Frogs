@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class health : MonoBehaviour, IDamage
@@ -12,6 +13,8 @@ public class health : MonoBehaviour, IDamage
     public float MaxHP => maxHP;
 
     public bool isAlive => _hp > 0f;
+
+    public event Action onDeath;
 
     void Awake()
     {
@@ -33,6 +36,8 @@ public class health : MonoBehaviour, IDamage
 
     private void Die()
     {
+        onDeath?.Invoke();
+        
         if (destroyOnDeath) Destroy(gameObject);
     }
 }
