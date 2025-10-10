@@ -537,10 +537,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9d7ad9111a7a2347ab0a6dc9f145262, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FOVSliderSimple
-  mainCam: {fileID: 0}
-  minFOV: 60
-  maxFOV: 110
-  defaultFOV: 85
 --- !u!1 &69646963
 GameObject:
   m_ObjectHideFlags: 0
@@ -706,6 +702,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 124e33d4fdabdb94b93eef84b58e0c07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::buttonFunctions
+  pauseMenu: {fileID: 966218206}
 --- !u!4 &203886023
 Transform:
   m_ObjectHideFlags: 0
@@ -1211,14 +1208,16 @@ MonoBehaviour:
   attackRange: 1
   attackArcDeg: 150
   attackDamage: 25
-  attackCooldown: 0.25
   knockback: 6
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
   attackOrigin: {fileID: 768749625}
-  attackTrigger: Attack
   rotateAttackOrigin: 1
+  maxCombo: 3
+  comboResetTime: 0.7
+  inputBufferTime: 0.35
+  postEndGrace: 0.18
 --- !u!114 &492897249
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1336,7 +1335,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 203886022}
         m_TargetAssemblyTypeName: buttonFunctions, Assembly-CSharp
-        m_MethodName: resume
+        m_MethodName: ReturnToPauseMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2265,7 +2264,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &966218207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4681,6 +4680,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1810643635}
   m_CullTransparentMesh: 1
+--- !u!1 &1821041443
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1821041445}
+  - component: {fileID: 1821041444}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1821041444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1821041443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 964a5fc87152b5248b2e7626481926d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::gameManager
+  shouldOpenSettingsOnLoad: 0
+  menuPause: {fileID: 966218206}
+  settingsMenu: {fileID: 2128782976}
+  menuWin: {fileID: 1678267296}
+  menuLose: {fileID: 2079367845}
+  menuActive: {fileID: 0}
+  isPaused: 0
+  yInvertON: 0
+  yInvertOFF: 0
+--- !u!4 &1821041445
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1821041443}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 470.23175, y: 447.48056, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1840437052
 GameObject:
   m_ObjectHideFlags: 0
@@ -6459,6 +6511,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 408352995}
+  - {fileID: 1821041445}
   - {fileID: 203886023}
   - {fileID: 38990523}
   - {fileID: 966218210}

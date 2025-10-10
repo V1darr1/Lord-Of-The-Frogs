@@ -17,14 +17,14 @@ public class UIGameRegistrar : MonoBehaviour
             // 2. CHECK THE FLAG and EXECUTE THE REQUEST
             if (gameManager.instance.shouldOpenSettingsOnLoad)
             {
-                gameManager.instance.shouldOpenSettingsOnLoad = false; // Reset the flag
 
-                // START THE COROUTINE instead of using Invoke
+
+                // START THE COROUTINE 
                 StartCoroutine(ExecuteDelayedSettingsOpen());
             }
             else
             {
-                // Standard start: make sure the pause menu is hidden
+                // make sure the pause menu is hidden
                 PausePanel.SetActive(false);
             }
         }
@@ -33,10 +33,14 @@ public class UIGameRegistrar : MonoBehaviour
     // Coroutine to wait one full frame before opening the menu
     IEnumerator ExecuteDelayedSettingsOpen()
     {
-        // Wait until the very end of the frame (after all other Start/Update logic)
+        // Wait until the very end of the frame 
         yield return new WaitForEndOfFrame();
 
-        // This is now guaranteed to run after the game world is stable.
-        gameManager.instance.OpenSettingsMenu();
+        //  run after the game world is stable.
+        if (gameManager.instance != null)
+        {
+            gameManager.instance.OpenSettingsMenu();
+
+        }
     }
 }
