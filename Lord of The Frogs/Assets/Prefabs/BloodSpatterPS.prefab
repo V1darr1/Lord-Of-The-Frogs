@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8522473558321694071}
   - component: {fileID: 5112918980420182800}
   m_Layer: 0
-  m_Name: BloodSplatterPS
+  m_Name: BloodSpatterPS
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
