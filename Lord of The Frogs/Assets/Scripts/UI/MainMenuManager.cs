@@ -1,24 +1,32 @@
 using UnityEngine;
-
 public class MainMenuManager : MonoBehaviour
 {
+    [SerializeField] private GameObject mainMenuPanel;
+    [SerializeField] private GameObject settingsMenuPanel;
     // Options button MUST trigger this function
     public void StartNewGame()
     {
-        // 1. Ensure the settings flag is OFF for a normal start
-        gameManager.instance.shouldOpenSettingsOnLoad = false;
+        gameManager.gameHasBooted = true;
+        if (gameManager.instance != null)
+        {
 
-        // 2. Load the scene where the game starts
+            gameManager.instance.shouldOpenSettingsOnLoad = false;
+        }
+
+        // Load the scene where the game starts
         UnityEngine.SceneManagement.SceneManager.LoadScene("BP-Dev");
     }
 
     public void openSettingsMenu()
     {
-        // 1. CRITICAL STEP: Set the flag on the persistent manager
-        gameManager.instance.shouldOpenSettingsOnLoad = true;
 
-        // 2. Load the scene where the settings panel is
-        UnityEngine.SceneManagement.SceneManager.LoadScene("BP-Dev");
+        mainMenuPanel.SetActive(false);
+        settingsMenuPanel.SetActive(true);
+    }
+    public void CloseSettingsPanel()
+    {
+        settingsMenuPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
     }
     public void QuitGame()
     {
