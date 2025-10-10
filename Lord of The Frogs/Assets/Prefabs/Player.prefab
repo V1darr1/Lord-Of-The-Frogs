@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3238712336522657961}
   - component: {fileID: 8776820805252893698}
+  - component: {fileID: 2614528581860896075}
   - component: {fileID: 8010098765761678759}
   - component: {fileID: 5232386320083338735}
   - component: {fileID: 7176284828177402087}
@@ -34,7 +35,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8206102997180586918}
@@ -54,8 +55,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::health
   maxHP: 100
-  destroyOnDeath: 1
+  destroyOnDeath: 0
   healable: 1
+--- !u!114 &2614528581860896075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266519665739511368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ce57d7eddc4c4f4daea34a35b4c12f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::YSort
+  offset: 0
+  multiplier: 100
 --- !u!114 &8010098765761678759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68,18 +83,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e129a5cbd634bf43b62fe7246a99363, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::playerController
-  moveSpeed: 5
-  attackRange: 1
+  moveSpeed: 3
+  attackRange: 0.43
   attackArcDeg: 150
   attackDamage: 25
-  attackCooldown: 0.25
   knockback: 6
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
   attackOrigin: {fileID: 8206102997180586918}
-  attackTrigger: Attack
   rotateAttackOrigin: 1
+  maxCombo: 3
+  comboResetTime: 0.7
+  inputBufferTime: 0.35
+  postEndGrace: 0.18
 --- !u!114 &5232386320083338735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,8 +177,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 356783991
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: cdfbf8b4012b41840a03093770207c5f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -384,7 +401,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 2.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

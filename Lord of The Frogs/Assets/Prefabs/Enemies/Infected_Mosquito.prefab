@@ -41,6 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3607621483947233073}
   - component: {fileID: 6425662880982288318}
+  - component: {fileID: 5088189003343386779}
   - component: {fileID: 5745966048924962028}
   - component: {fileID: 2910357022062934479}
   - component: {fileID: 1490359958971677673}
@@ -84,6 +85,20 @@ MonoBehaviour:
   maxHP: 50
   destroyOnDeath: 1
   healable: 0
+--- !u!114 &5088189003343386779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 841920101567478855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ce57d7eddc4c4f4daea34a35b4c12f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::YSort
+  offset: 0
+  multiplier: 100
 --- !u!114 &5745966048924962028
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100,6 +115,14 @@ MonoBehaviour:
   moveSpeed: 0.5
   stopDistance: 0.05
   pathRefresh: 0.1
+  detectionRadius: 4.5
+  useVisionCone: 0
+  visionConeDeg: 110
+  losBlockers:
+    serializedVersion: 2
+    m_Bits: 1024
+  loseSightRadius: 6
+  memoryTime: 2
   damage: 30
   attackRange: 0.5
   attackCooldown: 1
@@ -111,7 +134,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   projectileSpeed: 0
   explodeRadius: 0.5
-  explodeDamage: 15
+  explodeDamage: 30
   primeRadius: 1.25
   fuseTime: 2
   bomberSpeedBoost: 2
@@ -161,8 +184,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 356783991
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 2680dc5a79e6c0842a25cf5630fd96d2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

@@ -3,6 +3,7 @@ using UnityEngine;
 public class enemyAI : MonoBehaviour
 {
     public enum EnemyType { Melee, Ranged, Bomber, DotDropper }
+    enum State { Idle, Chase, Return }
 
     public EnemyType type = EnemyType.Melee;
 
@@ -10,6 +11,14 @@ public class enemyAI : MonoBehaviour
     [SerializeField] float moveSpeed = 3f;
     [SerializeField] float stopDistance = 0.6f;
     [SerializeField] float pathRefresh = 0.1f;
+
+    [Header("Detection")]
+    [SerializeField] float detectionRadius = 6f;
+    [SerializeField] bool useVisionCone = true;
+    [SerializeField] float visionConeDeg = 110f;
+    [SerializeField] LayerMask losBlockers;
+    [SerializeField] float loseSightRadius = 9f;
+    [SerializeField] float memoryTime = 2.0f;
 
     [Header("Shared Combat Stats")]
     [SerializeField] int damage = 1;
@@ -40,8 +49,13 @@ public class enemyAI : MonoBehaviour
     float dropTimer;
     float pathTimer;
     bool facingRight;
+    State state = State.Idle;
+
     bool primed;
     float fuse;
+
+    float forgetTimer;
+    Vector2 lastKnownPos;
 
     private void Awake()
     {
@@ -64,64 +78,119 @@ public class enemyAI : MonoBehaviour
         dropTimer -= Time.deltaTime;
         pathTimer -= Time.deltaTime;
 
-        //Face target
-        float dx = player.position.x - transform.position.x;
-        if (dx > 0.02f && !facingRight) SetFacing(true);
-        else if (dx < -0.02f && facingRight) SetFacing(false);
+        // ——— SENSE ———
+        bool sees = CanSeePlayer(out Vector2 seenPos);
+        float distToPlayer = Vector2.Distance(transform.position, player.position);
 
-        //Attack/Ability by type
-        float dist = Vector2.Distance(transform.position, player.position);
-
-        switch (type)
+        switch (state)
         {
-            case EnemyType.Melee:
-                if (cdTimer <= 0f && dist <= attackRange) { MeleeHit(); cdTimer = attackCooldown; }
-                break;
-
-            case EnemyType.Ranged:
-                if (cdTimer <= 0f && dist <= attackRange) { ShootProjectile(); cdTimer = attackCooldown; }
-                break;
-
-            case EnemyType.Bomber:
-                if (dist <= explodeRadius) { Explode(); return; }
-
-                if (!primed && dist <= primeRadius) { primed = true; fuse = fuseTime; }
-                if (primed)
+            case State.Idle:
+                if (sees)
                 {
-                    fuse -= Time.deltaTime;
-                    if (fuse <= 0f) { Explode(); return; }
+                    state = State.Chase;
+                    lastKnownPos = seenPos;
+                    forgetTimer = memoryTime;
                 }
                 break;
 
-            case EnemyType.DotDropper:
-                if (dropTimer <= 0f) { DropDoT(); dropTimer = dropInterval; }
-                if (cdTimer <= 0f && dist <= attackRange) { MeleeHit(); cdTimer = attackCooldown; }
+            case State.Chase:
+                if (sees)
+                {
+                    lastKnownPos = seenPos;
+                    forgetTimer = memoryTime;
+
+                    // Flip towards player horizontally
+                    float dx = player.position.x - transform.position.x;
+                    if (dx > 0.02f && !facingRight) SetFacing(true);
+                    else if (dx < -0.02f && facingRight) SetFacing(false);
+
+                    // Abilities/attacks
+                    if ((type == EnemyType.Melee || type == EnemyType.DotDropper) && cdTimer <= 0f && distToPlayer <= attackRange)
+                    { MeleeHit(); cdTimer = attackCooldown; }
+
+                    if (type == EnemyType.Ranged && cdTimer <= 0f && distToPlayer <= attackRange * 2.5f)
+                    { ShootProjectile(); cdTimer = attackCooldown; }
+
+                    if (type == EnemyType.DotDropper && dropTimer <= 0f)
+                    { DropDoT(); dropTimer = dropInterval; }
+
+                    if (type == EnemyType.Bomber)
+                    {
+                        if (distToPlayer <= explodeRadius) { Explode(); return; }
+                        if (!primed && distToPlayer <= primeRadius) { primed = true; fuse = fuseTime; }
+                    }
+                }
+                else
+                {
+                    forgetTimer -= Time.deltaTime;
+                    if (forgetTimer <= 0f) state = State.Return;
+                }
+
+                // hard de-aggro by distance
+                if (distToPlayer > loseSightRadius)
+                {
+                    state = State.Idle;
+                    primed = false;
+                }
                 break;
+
+            case State.Return:
+                if (sees)
+                {
+                    state = State.Chase;
+                    lastKnownPos = seenPos;
+                    forgetTimer = memoryTime;
+                }
+                else if (Vector2.Distance(transform.position, lastKnownPos) <= 0.15f)
+                {
+                    state = State.Idle;
+                    primed = false;
+                }
+                break;
+        }
+
+        // bomber fuse keeps ticking once primed
+        if (type == EnemyType.Bomber && primed)
+        {
+            fuse -= Time.deltaTime;
+            if (fuse <= 0f) { Explode(); return; }
         }
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
         if (!player) return;
+        if (pathTimer > 0f) return;
+        pathTimer = pathRefresh;
 
-        if (pathTimer <= 0f)
+        switch (state)
         {
-            pathTimer = pathRefresh;
-            Vector2 toPlayer = (player.position - transform.position);
-            float dist = toPlayer.magnitude;
+            case State.Idle:
+                rb.linearVelocity = Vector2.zero;
+                break;
 
-            if (type == EnemyType.Bomber)
-            {
-                if (dist > 0.05f)
+            case State.Chase:
+                if (type == EnemyType.Bomber)
                 {
-                    float spd = moveSpeed * (primed ? bomberSpeedBoost : 1f);
-                    rb.linearVelocity = toPlayer.normalized * spd;
+                    Vector2 to = (Vector2)player.position - (Vector2)transform.position;
+                    if (to.magnitude > 0.05f)
+                    {
+                        float spd = moveSpeed * (primed ? bomberSpeedBoost : 1f);
+                        rb.linearVelocity = to.normalized * spd;
+                    }
+                    else rb.linearVelocity = Vector2.zero;
+                    break;
                 }
-                else rb.linearVelocity = Vector2.zero;
-                return;
-            }
-            if (dist > stopDistance) rb.linearVelocity = toPlayer.normalized * moveSpeed;
-            else rb.linearVelocity = Vector2.zero;
+
+                Vector2 tp = (Vector2)player.position - (Vector2)transform.position;
+                float stop = (type == EnemyType.Ranged) ? Mathf.Max(stopDistance, attackRange * 0.7f) : stopDistance;
+                rb.linearVelocity = (tp.magnitude > stop) ? tp.normalized * moveSpeed : Vector2.zero;
+                break;
+
+            case State.Return:
+                Vector2 back = lastKnownPos - (Vector2)transform.position;
+                rb.linearVelocity = (back.magnitude > 0.15f) ? back.normalized * moveSpeed : Vector2.zero;
+                break;
         }
     }
 
@@ -159,6 +228,36 @@ public class enemyAI : MonoBehaviour
         Instantiate(dotZonePrefab, transform.position, Quaternion.identity);
     }
 
+    bool CanSeePlayer(out Vector2 seenPos)
+    {
+        seenPos = Vector2.zero;
+        if (!player) return false;
+
+        Vector2 to = (Vector2)player.position - (Vector2)transform.position;
+        float dist = to.magnitude;
+        if (dist > detectionRadius) return false;
+
+        if (useVisionCone)
+        {
+            Vector2 fwd = facingRight ? Vector2.right : Vector2.left;
+            if (Vector2.Angle(fwd, to) > visionConeDeg * 0.5f) return false;
+        }
+
+        // line of sight (if mask specified)
+        if (losBlockers.value != 0)
+        {
+            var hit = Physics2D.Raycast(transform.position, to.normalized, dist, losBlockers);
+            if (hit.collider != null) return false;
+        }
+
+        // ensure player's layer is intended target
+        int pmask = playerMask.value == 0 ? ~0 : playerMask.value;
+        if (((1 << player.gameObject.layer) & pmask) == 0) return false;
+
+        seenPos = player.position;
+        return true;
+    }
+
     void SetFacing(bool right)
     {
         facingRight = right;
@@ -168,14 +267,25 @@ public class enemyAI : MonoBehaviour
         transform.localScale = s;
     }
 
-    private void OnDrawGizmosSelected()
+    void OnDrawGizmosSelected()
     {
+        if (!hitOrigin) hitOrigin = transform;
+
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(hitOrigin ? hitOrigin.position : transform.position, attackRange);
+        Gizmos.DrawWireSphere(hitOrigin.position, attackRange);
+
+        Gizmos.color = new Color(0f, 1f, 1f, 0.8f);
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+
+        Gizmos.color = new Color(1f, 0.5f, 0f, 0.8f);
+        Gizmos.DrawWireSphere(transform.position, loseSightRadius);
+
         if (type == EnemyType.Bomber)
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireSphere(transform.position, explodeRadius);
+            Gizmos.color = new Color(1f, 0.6f, 0f, 0.8f);
+            Gizmos.DrawWireSphere(transform.position, primeRadius);
         }
     }
 }
