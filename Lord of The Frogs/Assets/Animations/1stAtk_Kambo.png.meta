@@ -1,16 +1,19 @@
 fileFormatVersion: 2
-guid: ce44352624a4ed843ba041199571a9e4
+guid: 5d4f89563fb3e7548abd44deca6c5a27
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2348793656575234191
-    second: Kambo-Sheet-SimpleAtk_0
+      213: 4281685200293789587
+    second: 1stAtk_Kambo_0
   - first:
-      213: -1230802197182915498
-    second: Kambo-Sheet-SimpleAtk_1
+      213: 3638136132278923825
+    second: 1stAtk_Kambo_1
   - first:
-      213: -522567518554353172
-    second: Kambo-Sheet-SimpleAtk_2
+      213: 8374157901552294307
+    second: 1stAtk_Kambo_2
+  - first:
+      213: 8513348229199119724
+    second: 1stAtk_Kambo_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -119,7 +122,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Kambo-Sheet-SimpleAtk_0
+      name: 1stAtk_Kambo_0
       rect:
         serializedVersion: 2
         x: 0
@@ -134,14 +137,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f809bded267989020800000000000000
-      internalID: 2348793656575234191
+      spriteID: 39ffe8b110a9b6b30800000000000000
+      internalID: 4281685200293789587
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Kambo-Sheet-SimpleAtk_1
+      name: 1stAtk_Kambo_1
       rect:
         serializedVersion: 2
         x: 64
@@ -156,14 +159,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 65c54283cef4beee0800000000000000
-      internalID: -1230802197182915498
+      spriteID: 132bff069814d7230800000000000000
+      internalID: 3638136132278923825
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Kambo-Sheet-SimpleAtk_2
+      name: 1stAtk_Kambo_2
       rect:
         serializedVersion: 2
         x: 128
@@ -178,8 +181,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ce1196d4c977fb8f0800000000000000
-      internalID: -522567518554353172
+      spriteID: 3a91e074e3cf63470800000000000000
+      internalID: 8374157901552294307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 1stAtk_Kambo_3
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c654d9adb1d752670800000000000000
+      internalID: 8513348229199119724
       vertices: []
       indices: 
       edges: []
@@ -188,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: bcc1f6ce37cc2874994c0f442e141169
+    spriteID: 34618a33ea30716418e6c2ab87fb51bb
     internalID: 0
     vertices: []
     indices: 
@@ -200,9 +225,10 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Kambo-Sheet-SimpleAtk_0: 2348793656575234191
-      Kambo-Sheet-SimpleAtk_1: -1230802197182915498
-      Kambo-Sheet-SimpleAtk_2: -522567518554353172
+      1stAtk_Kambo_0: 4281685200293789587
+      1stAtk_Kambo_1: 3638136132278923825
+      1stAtk_Kambo_2: 8374157901552294307
+      1stAtk_Kambo_3: 8513348229199119724
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
