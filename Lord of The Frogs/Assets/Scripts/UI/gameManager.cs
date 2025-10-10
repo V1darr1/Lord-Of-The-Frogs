@@ -20,6 +20,17 @@ public class gameManager : MonoBehaviour
     public float currentFOV = 85f; // Persistent FOV setting
     // ... (other game state variables like player, playerHPBar)
 
+
+    [SerializeField] private int playerLevel = 1;
+    [SerializeField] private int playerXP = 0;
+    [SerializeField] private int gold = 0;
+
+    [SerializeField] private int xpBase = 50;
+    [SerializeField] private int xpPerLevel = 25;
+
+    [SerializeField] private int enemiesAlive = 0;
+
+
     float timeScaleOrig = 1f;
 
     void Awake()
@@ -73,6 +84,8 @@ public class gameManager : MonoBehaviour
         }
 
         timeScaleOrig = Time.timeScale;
+
+
     }
 
     void Update()
@@ -149,6 +162,39 @@ public class gameManager : MonoBehaviour
         Time.timeScale = 0f;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+    }
+
+    // ---------- XP / Level ----------
+    public void AddXP(int amount)
+    {
+        if (amount <= 0) return;
+        playerXP += amount;
+
+        while (playerXP >= XPNeededForNext())
+        {
+            playerXP -= XPNeededForNext();
+            playerLevel++;
+            // TODO: grant stat points, heal, etc. (hook UI here)
+        }
+        OnXPChanged?.Invoke(playerXP, playerLevel);
+        SaveProgress();
+    }
+
+    // ---------- Gold ----------
+    public void AddGold(int amount)
+    {
+        gold = Mathf.Max(0, gold + amount);
+        OnGoldChanged?.Invoke(gold);
+        SaveProgress();
+    }
+
+    public bool TrySpendGold(int cost)
+    {
+        if (gold < cost) return false;
+        gold -= cost;
+        OnGoldChanged?.Invoke(gold);
+        SaveProgress();
+        return true;
     }
 
     public void PauseGame(GameObject menu)
