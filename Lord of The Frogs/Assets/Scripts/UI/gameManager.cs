@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class gameManager : MonoBehaviour
@@ -21,7 +21,18 @@ public class gameManager : MonoBehaviour
     public bool yInvertON;
     public bool yInvertOFF;
 
-    public System.Action OnRoomCleared;
+
+    [SerializeField] private int playerLevel = 1;
+    [SerializeField] private int playerXP = 0;
+    [SerializeField] private int gold = 0;
+
+    [SerializeField] private int xpBase = 50;
+    [SerializeField] private int xpPerLevel = 25;
+
+    [SerializeField] private int enemiesAlive = 0;
+
+
+    float timeScaleOrig = 1f;
 
     float timeScaleOrig;
 
@@ -72,7 +83,9 @@ public class gameManager : MonoBehaviour
             // Note: Player and initial game object setup removed here
         }
 
-        //MusicManager.Instance.PlayMusic("Play Music");
+        timeScaleOrig = Time.timeScale;
+
+
     }
 
     void Update()
@@ -102,6 +115,76 @@ public class gameManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    // --- MENU CONTROL LOGIC ---
+
+    public void OpenSettingsMenu()
+    {
+        // FIX: Hide the Pause Buttons panel before showing the Settings panel
+        if (menuPause != null)
+        {
+            menuPause.SetActive(false);
+        }
+
+        // Pause the game and activate the Settings Menu panel
+        PauseGame(settingsMenu);
+    }
+
+    public void ReturnToPauseMenu(GameObject menu)
+    {
+        // Hide the current active menu (Settings Menu)
+        if (menuActive)
+        {
+            menuActive.SetActive(false);
+        }
+
+        // Explicitly show the Pause Buttons Panel
+        if (menuPause != null)
+        {
+            menuPause.SetActive(true);
+        }
+
+        // Reset active menu state
+        menuActive = menuPause;
+
+        // Ensure time remains paused
+        Time.timeScale = 0f;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    // ---------- XP / Level ----------
+    public void AddXP(int amount)
+    {
+        if (amount <= 0) return;
+        playerXP += amount;
+
+        while (playerXP >= XPNeededForNext())
+        {
+            playerXP -= XPNeededForNext();
+            playerLevel++;
+            // TODO: grant stat points, heal, etc. (hook UI here)
+        }
+        OnXPChanged?.Invoke(playerXP, playerLevel);
+        SaveProgress();
+    }
+
+    // ---------- Gold ----------
+    public void AddGold(int amount)
+    {
+        gold = Mathf.Max(0, gold + amount);
+        OnGoldChanged?.Invoke(gold);
+        SaveProgress();
+    }
+
+    public bool TrySpendGold(int cost)
+    {
+        if (gold < cost) return false;
+        gold -= cost;
+        OnGoldChanged?.Invoke(gold);
+        SaveProgress();
+        return true;
     }
 
     public void PauseGame(GameObject menu)
