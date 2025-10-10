@@ -41,6 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6860201170206099237}
   - component: {fileID: 1480623504460919248}
+  - component: {fileID: -2982683835761309643}
   - component: {fileID: 8111427428643751645}
   - component: {fileID: 6668552523144609088}
   - component: {fileID: 5214662847618125507}
@@ -84,6 +85,20 @@ MonoBehaviour:
   maxHP: 200
   destroyOnDeath: 1
   healable: 0
+--- !u!114 &-2982683835761309643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8294867829172550043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ce57d7eddc4c4f4daea34a35b4c12f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::YSort
+  offset: 0
+  multiplier: 100
 --- !u!114 &8111427428643751645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100,6 +115,14 @@ MonoBehaviour:
   moveSpeed: 0.75
   stopDistance: 0.35
   pathRefresh: 0.1
+  detectionRadius: 4.5
+  useVisionCone: 0
+  visionConeDeg: 110
+  losBlockers:
+    serializedVersion: 2
+    m_Bits: 1024
+  loseSightRadius: 6
+  memoryTime: 2
   damage: 10
   attackRange: 0.38
   attackCooldown: 0.6
@@ -161,8 +184,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 356783991
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: fe91f5bd3b5fa6c4db5dcb1cc502e2eb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
