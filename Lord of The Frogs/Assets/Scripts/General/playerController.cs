@@ -52,9 +52,19 @@ public class playerController : MonoBehaviour, IDamage
             hp.onDeath += OnDeath;
     }
 
+
     void Update()
     {
-        UpdateAimFromMouse();        // <� mouse controls facing
+
+        if (gameManager.instance != null && gameManager.instance.isPaused)
+        {
+            // Set velocity to zero to stop any lingering momentum
+            if (rb) rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
+
+        UpdateAimFromMouse();
         HandleMove();
         HandleAttack();
         UpdateAnim();
@@ -107,7 +117,7 @@ public class playerController : MonoBehaviour, IDamage
             rb.linearVelocity = Vector2.zero;
             return;
         }
-        
+
         float hor = Input.GetAxisRaw("Horizontal");
         float ver = Input.GetAxisRaw("Vertical");
 
@@ -122,14 +132,14 @@ public class playerController : MonoBehaviour, IDamage
         {
             lastClickTime = Time.time;
             comboTimer = comboResetTime;
-            
+
             if (!isAttacking)
             {
                 if (comboStep == 0 || Time.time - lastClickedEndTime <= postEndGrace)
                 {
                     comboStep = 1;
                 }
-                
+
                 PlayComboStep(comboStep);
             }
             else if (comboStep < maxCombo)
@@ -156,7 +166,7 @@ public class playerController : MonoBehaviour, IDamage
 
     public void Anim_Hit()
     {
-        Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2) transform.position;
+        Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(origin, attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value);
 
@@ -180,7 +190,7 @@ public class playerController : MonoBehaviour, IDamage
         }
     }
 
-    public void Anim_QueueWindowOpen() 
+    public void Anim_QueueWindowOpen()
     {
         canQueueNext = true;
         bufferTimer = inputBufferTime;

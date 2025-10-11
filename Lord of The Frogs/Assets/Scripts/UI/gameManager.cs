@@ -6,10 +6,14 @@ public class gameManager : MonoBehaviour
     public static gameManager instance;
     public static bool gameHasBooted = false;
 
-    public bool triggerPause = false;
 
-    [HideInInspector] public bool shouldOpenSettingsOnLoad = false;
+    public static bool shouldOpenSettingsOnLoad = false;
 
+    // Flags and State
+
+    public bool isPaused;
+
+    // UI References
     public GameObject menuPause;
     public GameObject settingsMenu;
     [SerializeField] GameObject menuWin;
@@ -17,9 +21,10 @@ public class gameManager : MonoBehaviour
 
     [HideInInspector] public GameObject menuActive;
 
-    public bool isPaused;
+    // Other Variables
     public bool yInvertON;
     public bool yInvertOFF;
+    float timeScaleOrig;
 
 
     [SerializeField] private int playerLevel = 1;
@@ -36,12 +41,22 @@ public class gameManager : MonoBehaviour
 
     float timeScaleOrig;
 
+    [SerializeField] private int xpBase = 50;
+    [SerializeField] private int xpPerLevel = 25;
+
+    [SerializeField] private int enemiesAlive = 0;
+
+
+    float timeScaleOrig = 1f;
+
     void Awake()
     {
         if (instance == null)
         {
             instance = this;
             timeScaleOrig = Time.timeScale;
+
+            // Set initial state
             isPaused = false;
             menuActive = null;
         }
@@ -59,6 +74,7 @@ public class gameManager : MonoBehaviour
 
     private void Start()
     {
+        // BOOTSTRAP: Load Main Menu first
         if (!gameHasBooted)
         {
             gameHasBooted = true;
@@ -66,6 +82,7 @@ public class gameManager : MonoBehaviour
             return;
         }
 
+        // Check for Options Boot logic
         if (shouldOpenSettingsOnLoad)
         {
             shouldOpenSettingsOnLoad = false;
@@ -73,14 +90,13 @@ public class gameManager : MonoBehaviour
         }
         else
         {
+            // Normal game start logic
             isPaused = false;
             Time.timeScale = 1f;
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
 
             timeScaleOrig = Time.timeScale;
-
-            // Note: Player and initial game object setup removed here
         }
 
         timeScaleOrig = Time.timeScale;
@@ -90,30 +106,40 @@ public class gameManager : MonoBehaviour
 
     void Update()
     {
-
+        // The only reliable way to handle the ESC key is to check the current state 
+        // and ONLY allow toggling between NO MENU and the PAUSE MENU.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            triggerPause = true;
+            // 1. If NO menu is active, open the PAUSE MENU.
+            if (menuActive == null)
+            {
+                PauseGame(menuPause);
+            }
+            // 2. If the PAUSE MENU is active, close it (Unpause).
+            else if (menuActive == menuPause)
+            {
+                UnpauseGame();
+            }
+            // NOTE: If any other menu is active (Settings/Win/Lose), ESC does nothing.
         }
     }
-    void LateUpdate()
-    {
-        if (triggerPause)
-        {
-            triggerPause = false;
 
-            // Execute the pause/unpause logic
-            if (menuActive == null || menuActive == menuPause)
-            {
-                if (!isPaused)
-                {
-                    PauseGame(menuPause);
-                }
-                else
-                {
-                    UnpauseGame();
-                }
-            }
+    // --- SETTINGS LOGIC ---
+
+    public void SetFOV(float newFOV)
+    {
+        currentFOV = newFOV; // Store the new value
+
+        // Apply to the camera in the currently loaded scene
+        Camera gameCamera = Camera.main;
+
+        if (gameCamera != null)
+        {
+            gameCamera.fieldOfView = newFOV;
+
+            // Save to PlayerPrefs for persistence between game sessions
+            PlayerPrefs.SetFloat("FOV_Setting", newFOV);
+            PlayerPrefs.Save();
         }
     }
 
@@ -230,4 +256,23 @@ public class gameManager : MonoBehaviour
     {
         PauseGame(settingsMenu);
     }
+    //  void CheckWinCondition()
+    //  {
+    //     if (AllEnemiesAreDefeated())
+    //     {
+
+    //         StartCoroutine(ExecuteWinCondition());
+    //     }
+    //   }
+    // IEnumerator ExecuteWinCondition()
+    //  {
+    //      // Wait for the end of the current frame
+    //   yield return new WaitForEndOfFrame();
+
+    // Now, call the function that opens the menu
+    //     if (gameManager.instance != null)
+    //    {
+    //         gameManager.instance.OpenWinMenu();
+    //    }
+    //  }
 }
