@@ -6,10 +6,14 @@ public class gameManager : MonoBehaviour
     public static gameManager instance;
     public static bool gameHasBooted = false;
 
-    public bool triggerPause = false;
 
-    [HideInInspector] public bool shouldOpenSettingsOnLoad = false;
+    public static bool shouldOpenSettingsOnLoad = false;
 
+    // Flags and State
+
+    public bool isPaused;
+
+    // UI References
     public GameObject menuPause;
     public GameObject settingsMenu;
     [SerializeField] GameObject menuWin;
@@ -17,12 +21,9 @@ public class gameManager : MonoBehaviour
 
     [HideInInspector] public GameObject menuActive;
 
-    public bool isPaused;
+    // Other Variables
     public bool yInvertON;
     public bool yInvertOFF;
-
-    public System.Action OnRoomCleared;
-
     float timeScaleOrig;
 
     void Awake()
@@ -31,6 +32,8 @@ public class gameManager : MonoBehaviour
         {
             instance = this;
             timeScaleOrig = Time.timeScale;
+
+            // Set initial state
             isPaused = false;
             menuActive = null;
         }
@@ -48,6 +51,7 @@ public class gameManager : MonoBehaviour
 
     private void Start()
     {
+        // BOOTSTRAP: Load Main Menu first
         if (!gameHasBooted)
         {
             gameHasBooted = true;
@@ -55,6 +59,7 @@ public class gameManager : MonoBehaviour
             return;
         }
 
+        // Check for Options Boot logic
         if (shouldOpenSettingsOnLoad)
         {
             shouldOpenSettingsOnLoad = false;
@@ -62,45 +67,35 @@ public class gameManager : MonoBehaviour
         }
         else
         {
+            // Normal game start logic
             isPaused = false;
             Time.timeScale = 1f;
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
 
             timeScaleOrig = Time.timeScale;
-
-            // Note: Player and initial game object setup removed here
         }
 
-        //MusicManager.Instance.PlayMusic("Play Music");
+
     }
 
     void Update()
     {
-
+        // The only reliable way to handle the ESC key is to check the current state 
+        // and ONLY allow toggling between NO MENU and the PAUSE MENU.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            triggerPause = true;
-        }
-    }
-    void LateUpdate()
-    {
-        if (triggerPause)
-        {
-            triggerPause = false;
-
-            // Execute the pause/unpause logic
-            if (menuActive == null || menuActive == menuPause)
+            // 1. If NO menu is active, open the PAUSE MENU.
+            if (menuActive == null)
             {
-                if (!isPaused)
-                {
-                    PauseGame(menuPause);
-                }
-                else
-                {
-                    UnpauseGame();
-                }
+                PauseGame(menuPause);
             }
+            // 2. If the PAUSE MENU is active, close it (Unpause).
+            else if (menuActive == menuPause)
+            {
+                UnpauseGame();
+            }
+            // NOTE: If any other menu is active (Settings/Win/Lose), ESC does nothing.
         }
     }
 
@@ -147,4 +142,23 @@ public class gameManager : MonoBehaviour
     {
         PauseGame(settingsMenu);
     }
+    //  void CheckWinCondition()
+    //  {
+    //     if (AllEnemiesAreDefeated())
+    //     {
+
+    //         StartCoroutine(ExecuteWinCondition());
+    //     }
+    //   }
+    // IEnumerator ExecuteWinCondition()
+    //  {
+    //      // Wait for the end of the current frame
+    //   yield return new WaitForEndOfFrame();
+
+    // Now, call the function that opens the menu
+    //     if (gameManager.instance != null)
+    //    {
+    //         gameManager.instance.OpenWinMenu();
+    //    }
+    //  }
 }
