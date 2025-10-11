@@ -1,13 +1,15 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class gameManager : MonoBehaviour
 {
-    // --- SINGLETON AND PERSISTENCE ---
     public static gameManager instance;
     public static bool gameHasBooted = false;
-    public bool shouldOpenSettingsOnLoad = false; // Flag set by Main Menu
 
-    // --- UI REFERENCES (Set by UIGameRegistrar.cs) ---
+    public bool triggerPause = false;
+
+    [HideInInspector] public bool shouldOpenSettingsOnLoad = false;
+
     public GameObject menuPause;
     public GameObject settingsMenu;
     [SerializeField] GameObject menuWin;
@@ -15,10 +17,9 @@ public class gameManager : MonoBehaviour
 
     [HideInInspector] public GameObject menuActive;
 
-    // --- GAME STATE AND SETTINGS ---
     public bool isPaused;
-    public float currentFOV = 85f; // Persistent FOV setting
-    // ... (other game state variables like player, playerHPBar)
+    public bool yInvertON;
+    public bool yInvertOFF;
 
 
     [SerializeField] private int playerLevel = 1;
@@ -33,18 +34,21 @@ public class gameManager : MonoBehaviour
 
     float timeScaleOrig = 1f;
 
+    float timeScaleOrig;
+
     void Awake()
     {
-        // 1. Singleton Check
         if (instance == null)
         {
             instance = this;
-            // 2. CRITICAL: Persists across scene loads
-            DontDestroyOnLoad(gameObject);
+            timeScaleOrig = Time.timeScale;
+            isPaused = false;
+            menuActive = null;
         }
         else
         {
             Destroy(gameObject);
+            return;
         }
     }
 
@@ -55,32 +59,28 @@ public class gameManager : MonoBehaviour
 
     private void Start()
     {
-        // 1. BOOTSTRAP LOGIC (Runs in 00_Init)
         if (!gameHasBooted)
         {
             gameHasBooted = true;
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Main Menu");
+            SceneManager.LoadScene("Main Menu");
             return;
         }
-
-        // 2. BP-DEV SCENE SETUP (Runs when the game scene loads)
-
-        // Load FOV setting from storage and apply it immediately
-        float savedFOV = PlayerPrefs.GetFloat("FOV_Setting", 85f);
-        SetFOV(savedFOV);
 
         if (shouldOpenSettingsOnLoad)
         {
             shouldOpenSettingsOnLoad = false;
-            // The UIGameRegistrar starts the process to open settings after a delay
+            OpenSettingsMenu();
         }
         else
         {
-            // Normal game start
             isPaused = false;
-            Time.timeScale = timeScaleOrig;
+            Time.timeScale = 1f;
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+
+            timeScaleOrig = Time.timeScale;
+
+            // Note: Player and initial game object setup removed here
         }
 
         timeScaleOrig = Time.timeScale;
@@ -90,40 +90,30 @@ public class gameManager : MonoBehaviour
 
     void Update()
     {
-        // Pause/Unpause logic for Escape key
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (menuActive == null)
-            {
-                PauseGame(menuPause);
-            }
-            else if (menuActive == menuPause)
-            {
-                UnpauseGame();
-            }
-            else if (menuActive == settingsMenu)
-            {
-                ReturnToPauseMenu(menuPause);
-            }
+            triggerPause = true;
         }
     }
-
-    // --- SETTINGS LOGIC ---
-
-    public void SetFOV(float newFOV)
+    void LateUpdate()
     {
-        currentFOV = newFOV; // Store the new value
-
-        // Apply to the camera in the currently loaded scene
-        Camera gameCamera = Camera.main;
-
-        if (gameCamera != null)
+        if (triggerPause)
         {
-            gameCamera.fieldOfView = newFOV;
+            triggerPause = false;
 
-            // Save to PlayerPrefs for persistence between game sessions
-            PlayerPrefs.SetFloat("FOV_Setting", newFOV);
-            PlayerPrefs.Save();
+            // Execute the pause/unpause logic
+            if (menuActive == null || menuActive == menuPause)
+            {
+                if (!isPaused)
+                {
+                    PauseGame(menuPause);
+                }
+                else
+                {
+                    UnpauseGame();
+                }
+            }
         }
     }
 
@@ -165,37 +155,37 @@ public class gameManager : MonoBehaviour
     }
 
     // ---------- XP / Level ----------
-    public void AddXP(int amount)
-    {
-        if (amount <= 0) return;
-        playerXP += amount;
+    //public void AddXP(int amount)
+    //{
+        //if (amount <= 0) return;
+       // playerXP += amount;
 
-        while (playerXP >= XPNeededForNext())
-        {
-            playerXP -= XPNeededForNext();
-            playerLevel++;
-            // TODO: grant stat points, heal, etc. (hook UI here)
-        }
-        OnXPChanged?.Invoke(playerXP, playerLevel);
-        SaveProgress();
-    }
+        //while (playerXP >= XPNeededForNext())
+       // {
+         //   playerXP -= XPNeededForNext();
+           // playerLevel++;
+           // TODO: grant stat points, heal, etc. (hook UI here)
+       // }
+       // OnXPChanged?.Invoke(playerXP, playerLevel);
+       // SaveProgress();
+  //  }
 
     // ---------- Gold ----------
-    public void AddGold(int amount)
-    {
-        gold = Mathf.Max(0, gold + amount);
-        OnGoldChanged?.Invoke(gold);
-        SaveProgress();
-    }
+    //public void AddGold(int amount)
+  //  {
+       // gold = Mathf.Max(0, gold + amount);
+       //OnGoldChanged?.Invoke(gold);
+        //SaveProgress();
+  //  }
 
-    public bool TrySpendGold(int cost)
-    {
-        if (gold < cost) return false;
-        gold -= cost;
-        OnGoldChanged?.Invoke(gold);
-        SaveProgress();
-        return true;
-    }
+   // public bool TrySpendGold(int cost)
+   // {
+       // if (gold < cost) return false;
+       // gold -= cost;
+       // OnGoldChanged?.Invoke(gold);
+       //SaveProgress();
+        //return true;
+    //}
 
     public void PauseGame(GameObject menu)
     {
@@ -203,7 +193,7 @@ public class gameManager : MonoBehaviour
         if (menuActive) menuActive.SetActive(false);
         menuActive = menu;
         if (menuActive) menuActive.SetActive(true);
-        Time.timeScale = 0f;
+        Time.timeScale = 0;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
@@ -223,6 +213,21 @@ public class gameManager : MonoBehaviour
         gameHasBooted = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Main Menu");
+        SceneManager.LoadScene("Main Menu");
+    }
+
+    public void OpenWinMenu()
+    {
+        PauseGame(menuWin);
+    }
+
+    public void OpenLoseMenu()
+    {
+        PauseGame(menuLose);
+    }
+
+    public void OpenSettingsMenu()
+    {
+        PauseGame(settingsMenu);
     }
 }

@@ -3,6 +3,18 @@ using UnityEngine.SceneManagement;
 
 public class buttonFunctions : MonoBehaviour
 {
+    [SerializeField] private GameObject pauseMenu;
+    public void ReturnToPauseMenu()
+    {
+        if (gameManager.instance != null && pauseMenu != null)
+        {
+            gameManager.instance.PauseGame(pauseMenu);
+        }
+        else
+        {
+            Debug.LogError("ReturnToPauseMenu Failed");
+        }
+    }
     // Resume button calls UnpauseGame() which handles time and cursor.
     public void resume()
     {
