@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd258d75a583cd7439900ac668435c61, type: 3}
+  m_Name: G1_W3
+  m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
+  enemies:
+  - prefab: {fileID: 841920101567478855, guid: 258075765c7a40444a495d988e59076c, type: 3}
+    weight: 0.5
+  - prefab: {fileID: 8294867829172550043, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+    weight: 1
+  - prefab: {fileID: 7844918009843045749, guid: 241c61dc2df54c4409e342dd5fbdad22, type: 3}
+    weight: 0.5
+  totalCount: 8
+  spawnInterval: 0.3
