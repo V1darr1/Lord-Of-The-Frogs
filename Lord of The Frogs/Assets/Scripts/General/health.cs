@@ -43,7 +43,6 @@ public class health : MonoBehaviour, IDamage
     private void Die()
     {
         onDeath?.Invoke();
-        
         if (destroyOnDeath) Destroy(gameObject);
     }
 }
