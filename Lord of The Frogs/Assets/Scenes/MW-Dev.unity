@@ -1069,12 +1069,19 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 950937632}
-  - component: {fileID: 950937634}
-  - component: {fileID: 950937633}
-  m_Layer: 5
-  m_Name: MPBar
-  m_TagString: Untagged
+  - component: {fileID: 701228746}
+  - component: {fileID: 701228747}
+  - component: {fileID: 701228745}
+  - component: {fileID: 701228750}
+  - component: {fileID: 701228749}
+  - component: {fileID: 701228750}
+  - component: {fileID: 701228744}
+  - component: {fileID: 701228743}
+  - component: {fileID: 701228748}
+  - component: {fileID: 701228751}
+  m_Layer: 6
+  m_Name: Player
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1497,6 +1504,21 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1152008487}
   m_Enabled: 1
+  m_EditorHideFlags: 0
+<<<<<<< Updated upstream
+  m_Script: {fileID: 11500000, guid: f556832ace9ac524d925f694d29ed8b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceBarUI
+  targetHealth: {fileID: 701228747}
+  fillImage: {fileID: 1086809265}
+--- !u!70 &701228751
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701228742}
+  m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
@@ -1523,20 +1545,24 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.0016044527, y: -0.44764543}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.68873394, y: 0.10470915}
-  m_EdgeRadius: 0
---- !u!212 &1152008489
-SpriteRenderer:
+  m_Offset: {x: 0.018450916, y: -0.03533855}
+  m_Size: {x: 0.35368955, y: 0.62894505}
+  m_Direction: 0
+=======
+  m_Script: {fileID: 11500000, guid: 284d47e64f93b4340b97349d156bf63b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeeleSwing
+  damage: 15
+  knockback: 6
+  range: 1.8
+  halfAngle: 35
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 0
+  cooldown: 0.3
+>>>>>>> Stashed changes
+--- !u!1 &894984976
+GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
