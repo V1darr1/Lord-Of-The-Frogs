@@ -12,7 +12,11 @@ EditorUserSettings:
       value: 0500035407000a5d55560a261372094447154c297f707e627a7d1c66e0b5646e
       flags: 0
     RecentlyUsedSceneGuid-1:
+<<<<<<< HEAD
       value: 5b520d0503545b0d0c0c0a2715770748154f4d2c7d7d7e627a7d4a35b4e1646a
+=======
+      value: 530156055c0d5f0a085b0e2445725b444f4f4a297e2a70612b7a1e6bb3b8356a
+>>>>>>> de79173 (Wave System / Dungeon Room Blockout / Door Functionality)
       flags: 0
     RecentlyUsedSceneGuid-2:
       value: 5405035207560f025f0f597743250b4413154f7d787c75627f7c4865e4e2323a
@@ -22,6 +26,9 @@ EditorUserSettings:
       flags: 0
     RecentlyUsedSceneGuid-4:
       value: 5405035207560f025f0f597743250b4413154f7d787c75627f7c4865e4e2323a
+      flags: 0
+    RecentlyUsedSceneGuid-5:
+      value: 53010356560d59080e5d5d7011250a444e4f4d787f2c236528781b66e1b5623e
       flags: 0
     RecentlyUsedSceneGuid-5:
       value: 53010356560d59080e5d5d7011250a444e4f4d787f2c236528781b66e1b5623e
