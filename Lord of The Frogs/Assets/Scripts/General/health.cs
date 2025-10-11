@@ -6,6 +6,7 @@ public class health : MonoBehaviour, IDamage
     [SerializeField] private float maxHP = 100f;
     [SerializeField] private bool destroyOnDeath = true;
     [SerializeField] private bool healable = false;
+    [SerializeField] private AudioClip[] damageSoundClips;
 
     private float _hp;
 
@@ -26,6 +27,11 @@ public class health : MonoBehaviour, IDamage
         if (!isAlive) return;
         _hp -= amount;
         if (_hp <= 0f) { _hp = 0f; Die(); }
+
+        //playm sound FX 
+
+        //SoundFXManager.instance.PlaySoundFXClip(damageSoundClip, transform, 1f);
+        SoundFXManager.instance.PlayRandomSoundFXClip(damageSoundClips, transform, 1f);
     }
 
     public void Heal(float amount)
@@ -37,7 +43,6 @@ public class health : MonoBehaviour, IDamage
     private void Die()
     {
         onDeath?.Invoke();
-        
         if (destroyOnDeath) Destroy(gameObject);
     }
 }
