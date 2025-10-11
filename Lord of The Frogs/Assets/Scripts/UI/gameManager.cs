@@ -39,6 +39,16 @@ public class gameManager : MonoBehaviour
 
     float timeScaleOrig = 1f;
 
+    float timeScaleOrig;
+
+    [SerializeField] private int xpBase = 50;
+    [SerializeField] private int xpPerLevel = 25;
+
+    [SerializeField] private int enemiesAlive = 0;
+
+
+    float timeScaleOrig = 1f;
+
     void Awake()
     {
         if (instance == null)
