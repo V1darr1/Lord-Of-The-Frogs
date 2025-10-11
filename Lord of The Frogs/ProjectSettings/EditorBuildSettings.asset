@@ -14,6 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BP-Dev.unity
     guid: 7474bcf92a553f44eb7744322556fbfb
+<<<<<<< HEAD
+=======
+  - enabled: 1
+>>>>>>> de79173 (Wave System / Dungeon Room Blockout / Door Functionality)
     path: Assets/Scenes/MW-Dev.unity
     guid: d9f96022e4cef0944afc50d5003ff2f4
   - enabled: 1
