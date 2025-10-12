@@ -12,10 +12,7 @@ public class MainMenuManager : MonoBehaviour
         // Plays music when the scene loads (assuming MusicManager is set up correctly)
         //MusicManager.Instance.PlayMusic("MainMenu");
 
-        // Ensure the game is frozen and cursor is visible
         Time.timeScale = 0f;
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
 
         // Ensure initial panel states are correct
         mainMenuPanel.SetActive(true);
@@ -29,7 +26,7 @@ public class MainMenuManager : MonoBehaviour
         gameManager.shouldOpenSettingsOnLoad = false;
 
         // Load the scene where the game starts
-        SceneManager.LoadScene("JR-Dev");
+        SceneManager.LoadScene("Large_Map_1");
     }
 
     public void openSettingsMenu()

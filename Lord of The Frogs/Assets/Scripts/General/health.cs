@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class health : MonoBehaviour, IDamage
 {
+    public static int TotalEnemiesInLevel = 0;
+
     [SerializeField] private float maxHP = 100f;
     [SerializeField] private bool destroyOnDeath = true;
     [SerializeField] private bool healable = false;
@@ -28,8 +30,14 @@ public class health : MonoBehaviour, IDamage
         _hp -= amount;
         if (_hp <= 0f) { _hp = 0f; Die(); }
 
-        //play sound FX random  
-        SoundFXManager.instance.PlayRandomSoundFXClip(damageSoundClips, transform, 1f);
+        //play sound FX 
+
+        //SoundFXManager.instance.PlaySoundFXClip(damageSoundClip, transform, 1f);
+        if (SoundFXManager.instance != null && damageSoundClips != null && damageSoundClips.Length > 0)
+        {
+            SoundFXManager.instance.PlayRandomSoundFXClip(damageSoundClips, transform, 1f);
+        }
+        Debug.Log($"[{name}] Took {amount}, HP now {_hp}", this);
     }
 
     public void Heal(float amount)
@@ -40,7 +48,32 @@ public class health : MonoBehaviour, IDamage
 
     private void Die()
     {
+        if (gameObject.CompareTag("Player"))
+        {
+            //Lose
+            if (gameManager.instance != null)
+            {
+                gameManager.instance.OpenLoseMenu();
+            }
+        }
+        else if (gameObject.CompareTag("Enemy"))
+        {
+            TotalEnemiesInLevel--;
+
+            if (TotalEnemiesInLevel <= 0)
+            {
+                if (gameManager.instance != null)
+                {
+                    gameManager.instance.OpenWinMenu();
+                }
+            }
+        }
         onDeath?.Invoke();
-        if (destroyOnDeath) Destroy(gameObject);
+
+
+        if (destroyOnDeath)
+        {
+            Destroy(gameObject);
+        }
     }
 }

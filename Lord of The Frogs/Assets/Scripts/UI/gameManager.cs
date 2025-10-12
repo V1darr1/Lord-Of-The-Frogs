@@ -24,7 +24,6 @@ public class gameManager : MonoBehaviour
     // Other Variables
     public bool yInvertON;
     public bool yInvertOFF;
-    float timeScaleOrig;
 
 
     [SerializeField] private int playerLevel = 1;
@@ -35,11 +34,6 @@ public class gameManager : MonoBehaviour
     [SerializeField] private int xpPerLevel = 25;
 
     [SerializeField] private int enemiesAlive = 0;
-
-
-    //float timeScaleOrig = 1f;
-
-
 
     void Awake()
     {
@@ -73,7 +67,7 @@ public class gameManager : MonoBehaviour
             SceneManager.LoadScene("Main Menu");
             return;
         }
-
+        health.TotalEnemiesInLevel = 0;
         // Check for Options Boot logic
         if (shouldOpenSettingsOnLoad)
         {
@@ -85,13 +79,11 @@ public class gameManager : MonoBehaviour
             // Normal game start logic
             isPaused = false;
             Time.timeScale = 1f;
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
 
             timeScaleOrig = Time.timeScale;
         }
-
-        timeScaleOrig = Time.timeScale;
 
 
     }
@@ -117,22 +109,6 @@ public class gameManager : MonoBehaviour
     }
 
     // --- SETTINGS LOGIC ---
-
-    public void SetFOV(float newFOV)
-    {
-
-        // Apply to the camera in the currently loaded scene
-        Camera gameCamera = Camera.main;
-
-        if (gameCamera != null)
-        {
-            gameCamera.fieldOfView = newFOV;
-
-            // Save to PlayerPrefs for persistence between game sessions
-            PlayerPrefs.SetFloat("FOV_Setting", newFOV);
-            PlayerPrefs.Save();
-        }
-    }
 
     // --- MENU CONTROL LOGIC ---
 
@@ -174,34 +150,34 @@ public class gameManager : MonoBehaviour
     // ---------- XP / Level ----------
     //public void AddXP(int amount)
     //{
-        //if (amount <= 0) return;
-       // playerXP += amount;
+    //if (amount <= 0) return;
+    // playerXP += amount;
 
-        //while (playerXP >= XPNeededForNext())
-       // {
-         //   playerXP -= XPNeededForNext();
-           // playerLevel++;
-           // TODO: grant stat points, heal, etc. (hook UI here)
-       // }
-       // OnXPChanged?.Invoke(playerXP, playerLevel);
-       // SaveProgress();
-  //  }
+    //while (playerXP >= XPNeededForNext())
+    // {
+    //   playerXP -= XPNeededForNext();
+    // playerLevel++;
+    // TODO: grant stat points, heal, etc. (hook UI here)
+    // }
+    // OnXPChanged?.Invoke(playerXP, playerLevel);
+    // SaveProgress();
+    //  }
 
     // ---------- Gold ----------
     //public void AddGold(int amount)
-  //  {
-       // gold = Mathf.Max(0, gold + amount);
-       //OnGoldChanged?.Invoke(gold);
-        //SaveProgress();
-  //  }
+    //  {
+    // gold = Mathf.Max(0, gold + amount);
+    //OnGoldChanged?.Invoke(gold);
+    //SaveProgress();
+    //  }
 
-   // public bool TrySpendGold(int cost)
-   // {
-       // if (gold < cost) return false;
-       // gold -= cost;
-       // OnGoldChanged?.Invoke(gold);
-       //SaveProgress();
-        //return true;
+    // public bool TrySpendGold(int cost)
+    // {
+    // if (gold < cost) return false;
+    // gold -= cost;
+    // OnGoldChanged?.Invoke(gold);
+    //SaveProgress();
+    //return true;
     //}
 
     public void PauseGame(GameObject menu)
@@ -221,8 +197,8 @@ public class gameManager : MonoBehaviour
         if (menuActive) menuActive.SetActive(false);
         menuActive = null;
         Time.timeScale = timeScaleOrig;
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void ReturnToMainMenu()
@@ -243,6 +219,7 @@ public class gameManager : MonoBehaviour
         PauseGame(menuLose);
     }
 
+ 
     //  void CheckWinCondition()
     //  {
     //     if (AllEnemiesAreDefeated())
