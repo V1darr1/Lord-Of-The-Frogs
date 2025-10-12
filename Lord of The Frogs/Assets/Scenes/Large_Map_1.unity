@@ -4181,6 +4181,7 @@ GameObject:
   m_Component:
   - component: {fileID: 902734055}
   - component: {fileID: 902734056}
+  - component: {fileID: 902734057}
   m_Layer: 0
   m_Name: MusicManager
   m_TagString: Untagged
@@ -4215,7 +4216,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 6712784410860625802, guid: a9ae64b3377b60d4397dcd04f09e88c9, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: d9f33cea30bddc34b9d736097754e9eb, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 1
@@ -4300,6 +4301,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &902734057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 902734054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe0b7674a521bec4e8828a33a9c0d867, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneMusicGuard
+  musicSource: {fileID: 902734056}
+  playOnStart: 1
 --- !u!1001 &911075806
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5214,15 +5229,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwordSpinSkill
   spinKey: 32
-  spinDuration: 0.5
+  spinDuration: 2
   tickRate: 0.1
   cooldown: 2
-  damagePerTick: 6
+  damagePerTick: 10
   knockback: 4
   radius: 1.8
   enemyMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   grantIFrames: 0
   playerLayerName: Player
   enemyLayerName: Enemy

@@ -43,6 +43,13 @@ public class MainMenuManager : MonoBehaviour
         mainMenuPanel.SetActive(true);
     }
 
+    public void ReturnToMainMenu()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        SceneManager.LoadScene("Main Menu");
+    }
+
     // --- DEBUG FEATURE: Showcase Level Access ---
 #if UNITY_EDITOR
     public void LoadShowcaseLevel()
