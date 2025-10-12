@@ -73,7 +73,7 @@ public class gameManager : MonoBehaviour
             SceneManager.LoadScene("Main Menu");
             return;
         }
-
+        health.TotalEnemiesInLevel = 0;
         // Check for Options Boot logic
         if (shouldOpenSettingsOnLoad)
         {
@@ -90,8 +90,6 @@ public class gameManager : MonoBehaviour
 
             timeScaleOrig = Time.timeScale;
         }
-
-        timeScaleOrig = Time.timeScale;
 
 
     }
@@ -174,34 +172,34 @@ public class gameManager : MonoBehaviour
     // ---------- XP / Level ----------
     //public void AddXP(int amount)
     //{
-        //if (amount <= 0) return;
-       // playerXP += amount;
+    //if (amount <= 0) return;
+    // playerXP += amount;
 
-        //while (playerXP >= XPNeededForNext())
-       // {
-         //   playerXP -= XPNeededForNext();
-           // playerLevel++;
-           // TODO: grant stat points, heal, etc. (hook UI here)
-       // }
-       // OnXPChanged?.Invoke(playerXP, playerLevel);
-       // SaveProgress();
-  //  }
+    //while (playerXP >= XPNeededForNext())
+    // {
+    //   playerXP -= XPNeededForNext();
+    // playerLevel++;
+    // TODO: grant stat points, heal, etc. (hook UI here)
+    // }
+    // OnXPChanged?.Invoke(playerXP, playerLevel);
+    // SaveProgress();
+    //  }
 
     // ---------- Gold ----------
     //public void AddGold(int amount)
-  //  {
-       // gold = Mathf.Max(0, gold + amount);
-       //OnGoldChanged?.Invoke(gold);
-        //SaveProgress();
-  //  }
+    //  {
+    // gold = Mathf.Max(0, gold + amount);
+    //OnGoldChanged?.Invoke(gold);
+    //SaveProgress();
+    //  }
 
-   // public bool TrySpendGold(int cost)
-   // {
-       // if (gold < cost) return false;
-       // gold -= cost;
-       // OnGoldChanged?.Invoke(gold);
-       //SaveProgress();
-        //return true;
+    // public bool TrySpendGold(int cost)
+    // {
+    // if (gold < cost) return false;
+    // gold -= cost;
+    // OnGoldChanged?.Invoke(gold);
+    //SaveProgress();
+    //return true;
     //}
 
     public void PauseGame(GameObject menu)
