@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class health : MonoBehaviour, IDamage
 {
+    public static int TotalEnemiesInLevel = 0;
+
     [SerializeField] private float maxHP = 100f;
     [SerializeField] private bool destroyOnDeath = true;
     [SerializeField] private bool healable = false;
@@ -46,7 +48,32 @@ public class health : MonoBehaviour, IDamage
 
     private void Die()
     {
+        if (gameObject.CompareTag("Player"))
+        {
+            //Lose
+            if (gameManager.instance != null)
+            {
+                gameManager.instance.OpenLoseMenu();
+            }
+        }
+        else if (gameObject.CompareTag("Enemy"))
+        {
+            TotalEnemiesInLevel--;
+
+            if (TotalEnemiesInLevel <= 0)
+            {
+                if (gameManager.instance != null)
+                {
+                    gameManager.instance.OpenWinMenu();
+                }
+            }
+        }
         onDeath?.Invoke();
-        if (destroyOnDeath) Destroy(gameObject);
+
+
+        if (destroyOnDeath)
+        {
+            Destroy(gameObject);
+        }
     }
 }

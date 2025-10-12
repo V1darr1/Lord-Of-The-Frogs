@@ -1278,6 +1278,7 @@ MonoBehaviour:
   maxHP: 100
   destroyOnDeath: 1
   healable: 1
+  damageSoundClips: []
 --- !u!4 &492897250
 Transform:
   m_ObjectHideFlags: 0
@@ -1572,6 +1573,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 133297817795298587, guid: 241c61dc2df54c4409e342dd5fbdad22, type: 3}
+      propertyPath: damageSoundClips.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 133297817795298587, guid: 241c61dc2df54c4409e342dd5fbdad22, type: 3}
+      propertyPath: 'damageSoundClips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 2d70decbb2bbf8b4c8efb52c0520629b, type: 3}
+    - target: {fileID: 133297817795298587, guid: 241c61dc2df54c4409e342dd5fbdad22, type: 3}
+      propertyPath: 'damageSoundClips.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: cf5fa684798cf24479c4f5496a89e3d6, type: 3}
+    - target: {fileID: 133297817795298587, guid: 241c61dc2df54c4409e342dd5fbdad22, type: 3}
+      propertyPath: 'damageSoundClips.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: f4d2e42044c7ee441a178daa96d1f651, type: 3}
     - target: {fileID: 7844918009843045749, guid: 241c61dc2df54c4409e342dd5fbdad22, type: 3}
       propertyPath: m_Name
       value: Normal_Mosquito
@@ -4762,6 +4779,12 @@ MonoBehaviour:
   menuActive: {fileID: 0}
   yInvertON: 0
   yInvertOFF: 0
+  playerLevel: 1
+  playerXP: 0
+  gold: 0
+  xpBase: 50
+  xpPerLevel: 25
+  enemiesAlive: 0
 --- !u!4 &1821041445
 Transform:
   m_ObjectHideFlags: 0
@@ -5266,6 +5289,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1480623504460919248, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: damageSoundClips.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1480623504460919248, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: 'damageSoundClips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: cf5fa684798cf24479c4f5496a89e3d6, type: 3}
+    - target: {fileID: 1480623504460919248, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: 'damageSoundClips.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 2d70decbb2bbf8b4c8efb52c0520629b, type: 3}
+    - target: {fileID: 1480623504460919248, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
+      propertyPath: 'damageSoundClips.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: f4d2e42044c7ee441a178daa96d1f651, type: 3}
     - target: {fileID: 6860201170206099237, guid: 07d29e77b6bf23b438458a58daffb770, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5
