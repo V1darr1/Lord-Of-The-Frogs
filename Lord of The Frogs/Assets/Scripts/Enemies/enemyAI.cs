@@ -43,6 +43,9 @@ public class enemyAI : MonoBehaviour
     [SerializeField] DoTZone2D dotZonePrefab;
     [SerializeField] float dropInterval = 2.0f;
 
+    [SerializeField] float defaultStagger = 0.15f;
+    float staggerUntil;
+
     Rigidbody2D rb;
     Transform player;
     float cdTimer;
@@ -73,6 +76,8 @@ public class enemyAI : MonoBehaviour
     void Update()
     {
         if (!player) return;
+
+        if (Time.time < staggerUntil) return;
 
         cdTimer -= Time.deltaTime;
         dropTimer -= Time.deltaTime;
@@ -160,6 +165,9 @@ public class enemyAI : MonoBehaviour
     void FixedUpdate()
     {
         if (!player) return;
+
+        if (Time.time < staggerUntil) { rb.linearVelocity = Vector2.zero; return; }
+
         if (pathTimer > 0f) return;
         pathTimer = pathRefresh;
 
@@ -265,6 +273,12 @@ public class enemyAI : MonoBehaviour
         Vector3 s = transform.localScale;
         s.x = Mathf.Abs(s.x) * (right ? 1f : -1f);
         transform.localScale = s;
+    }
+
+    public void Stagger(float duration)
+    {
+        staggerUntil = Mathf.Max(staggerUntil, Time.time + duration);
+        if (rb) rb.linearVelocity = Vector2.zero;
     }
 
     void OnDrawGizmosSelected()

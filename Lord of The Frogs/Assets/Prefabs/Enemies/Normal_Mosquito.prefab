@@ -43,6 +43,7 @@ GameObject:
   - component: {fileID: 133297817795298587}
   - component: {fileID: 5590387263295822606}
   - component: {fileID: 1550054930492169376}
+  - component: {fileID: -1143360811467118766}
   - component: {fileID: 7479806712923583404}
   - component: {fileID: 7120707789540456423}
   - component: {fileID: 7154046542107812283}
@@ -85,6 +86,10 @@ MonoBehaviour:
   maxHP: 125
   destroyOnDeath: 1
   healable: 0
+  damageSoundClips:
+  - {fileID: 8300000, guid: f4d2e42044c7ee441a178daa96d1f651, type: 3}
+  - {fileID: 8300000, guid: cf5fa684798cf24479c4f5496a89e3d6, type: 3}
+  - {fileID: 8300000, guid: 2d70decbb2bbf8b4c8efb52c0520629b, type: 3}
 --- !u!114 &5590387263295822606
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,6 +145,26 @@ MonoBehaviour:
   bomberSpeedBoost: 0
   dotZonePrefab: {fileID: 0}
   dropInterval: 0
+  defaultStagger: 0.15
+--- !u!114 &-1143360811467118766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7844918009843045749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f39333816d2c1bf4ebaa63b698157be7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHitReact
+  sprites:
+  - {fileID: 7479806712923583404}
+  flashColor: {r: 1, g: 0.4116228, b: 0, a: 1}
+  flashTime: 0.1
+  shakeTime: 0.1
+  shakeMagnitude: 0.06
+  staggerTime: 0.25
 --- !u!212 &7479806712923583404
 SpriteRenderer:
   m_ObjectHideFlags: 0
