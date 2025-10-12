@@ -28,9 +28,7 @@ public class health : MonoBehaviour, IDamage
         _hp -= amount;
         if (_hp <= 0f) { _hp = 0f; Die(); }
 
-        //playm sound FX 
-
-        //SoundFXManager.instance.PlaySoundFXClip(damageSoundClip, transform, 1f);
+        //play sound FX random  
         SoundFXManager.instance.PlayRandomSoundFXClip(damageSoundClips, transform, 1f);
     }
 

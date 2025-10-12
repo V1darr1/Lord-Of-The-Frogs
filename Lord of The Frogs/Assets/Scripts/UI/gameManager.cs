@@ -37,17 +37,9 @@ public class gameManager : MonoBehaviour
     [SerializeField] private int enemiesAlive = 0;
 
 
-    float timeScaleOrig = 1f;
-
-    float timeScaleOrig;
-
-    [SerializeField] private int xpBase = 50;
-    [SerializeField] private int xpPerLevel = 25;
-
-    [SerializeField] private int enemiesAlive = 0;
+    //float timeScaleOrig = 1f;
 
 
-    float timeScaleOrig = 1f;
 
     void Awake()
     {
@@ -128,7 +120,6 @@ public class gameManager : MonoBehaviour
 
     public void SetFOV(float newFOV)
     {
-        currentFOV = newFOV; // Store the new value
 
         // Apply to the camera in the currently loaded scene
         Camera gameCamera = Camera.main;
@@ -252,10 +243,6 @@ public class gameManager : MonoBehaviour
         PauseGame(menuLose);
     }
 
-    public void OpenSettingsMenu()
-    {
-        PauseGame(settingsMenu);
-    }
     //  void CheckWinCondition()
     //  {
     //     if (AllEnemiesAreDefeated())
