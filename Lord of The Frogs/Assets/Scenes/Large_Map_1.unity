@@ -388,7 +388,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 2057584964}
         m_TargetAssemblyTypeName: buttonFunctions, Assembly-CSharp
         m_MethodName: ReturnToPauseMenu
         m_Mode: 1
@@ -5165,8 +5165,69 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 266519665739511368, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
+      insertIndex: 10
+      addedObject: {fileID: 1167601703}
+    - targetCorrespondingSourceObject: {fileID: 266519665739511368, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
+      insertIndex: 11
+      addedObject: {fileID: 1167601702}
   m_SourcePrefab: {fileID: 100100000, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
+--- !u!1 &1167601701 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 266519665739511368, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
+  m_PrefabInstance: {fileID: 1167601700}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1167601702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1167601701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38733ebffdc58ec4992e31741a0ed0b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashSkill2D
+  dashKey: 304
+  mouseButton: 1
+  towardsMouse: 1
+  fallbackDir: {x: 1, y: 0}
+  dashSpeed: 18
+  dashTime: 0.12
+  cooldown: 0.8
+  grantIFrames: 1
+  playerLayerName: Player
+  enemyLayerName: Enemy
+  dashSfx: {fileID: 0}
+--- !u!114 &1167601703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1167601701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a04973fba73e0f24d8f302c9293b944f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwordSpinSkill
+  spinKey: 32
+  spinDuration: 0.5
+  tickRate: 0.1
+  cooldown: 2
+  damagePerTick: 6
+  knockback: 4
+  radius: 1.8
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 0
+  grantIFrames: 0
+  playerLayerName: Player
+  enemyLayerName: Enemy
+  spinSfx: {fileID: 0}
+  spinVfxPrefab: {fileID: 0}
 --- !u!1001 &1173039572
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5760,7 +5821,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::gameManager
   isPaused: 0
   menuPause: {fileID: 1519587613}
-  settingsMenu: {fileID: 0}
+  settingsMenu: {fileID: 2093453972}
   menuWin: {fileID: 1245724734}
   menuLose: {fileID: 103958409}
   menuActive: {fileID: 0}
@@ -6285,7 +6346,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba817eb4e0eb44740a5910b43a699533, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIGameRegistrar
-  SettingsPanel: {fileID: 0}
+  SettingsPanel: {fileID: 2093453972}
   PausePanel: {fileID: 1519587613}
 --- !u!224 &1519587618
 RectTransform:
@@ -10199,4 +10260,12 @@ CanvasRenderer:
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
-  m_Roots: []
+  m_Roots:
+  - {fileID: 1167601700}
+  - {fileID: 388458590}
+  - {fileID: 838276579}
+  - {fileID: 869837533}
+  - {fileID: 1105877064}
+  - {fileID: 1125068118}
+  - {fileID: 1919205917}
+  - {fileID: 1972019429}
