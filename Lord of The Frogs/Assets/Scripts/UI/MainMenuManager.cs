@@ -29,7 +29,7 @@ public class MainMenuManager : MonoBehaviour
         gameManager.shouldOpenSettingsOnLoad = false;
 
         // Load the scene where the game starts
-        SceneManager.LoadScene("BP-Dev");
+        SceneManager.LoadScene("JR-Dev");
     }
 
     public void openSettingsMenu()

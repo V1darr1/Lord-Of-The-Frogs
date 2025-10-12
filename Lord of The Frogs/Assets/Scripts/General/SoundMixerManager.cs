@@ -22,6 +22,11 @@ public class SoundMixerManager : MonoBehaviour
     }
 
 
+    public void SetMainMenuVolume(float level)
+    {
+        audioMixer.SetFloat("MainMenuVolume", level);
+    }
+
 
 
 

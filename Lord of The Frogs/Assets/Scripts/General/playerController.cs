@@ -41,6 +41,9 @@ public class playerController : MonoBehaviour, IDamage
     float comboTimer = 0f;
     float bufferTimer = 0f;
 
+    [SerializeField] private AudioClip[] AttackSoundClips;
+    [SerializeField] private AudioClip[] DeathSoundClip;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -128,6 +131,7 @@ public class playerController : MonoBehaviour, IDamage
     // ---------- Attack / Combo ----------
     void HandleAttack()
     {
+        
         if (Input.GetMouseButtonDown(0))
         {
             lastClickTime = Time.time;
@@ -162,6 +166,7 @@ public class playerController : MonoBehaviour, IDamage
             case 2: anim.SetTrigger("Attack2"); break;
             case 3: anim.SetTrigger("Attack3"); break;
         }
+        SoundFXManager.instance.PlayRandomSoundFXClip(AttackSoundClips, transform, 1f);
     }
 
     public void Anim_Hit()
@@ -262,6 +267,7 @@ public class playerController : MonoBehaviour, IDamage
 
     void OnDeath()
     {
+        SoundFXManager.instance.PlayRandomSoundFXClip(DeathSoundClip, transform, 1f);
         rb.linearVelocity = Vector2.zero;
         moveDir = Vector2.zero;
 
