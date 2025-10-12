@@ -35,6 +35,8 @@ public class gameManager : MonoBehaviour
 
     [SerializeField] private int enemiesAlive = 0;
 
+    private float timeScaleOrig;
+
     void Awake()
     {
         if (instance == null)
