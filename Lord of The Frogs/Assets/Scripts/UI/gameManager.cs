@@ -36,19 +36,6 @@ public class gameManager : MonoBehaviour
 
     [SerializeField] private int enemiesAlive = 0;
 
-
-    float timeScaleOrig = 1f;
-
-    float timeScaleOrig;
-
-    [SerializeField] private int xpBase = 50;
-    [SerializeField] private int xpPerLevel = 25;
-
-    [SerializeField] private int enemiesAlive = 0;
-
-
-    float timeScaleOrig = 1f;
-
     void Awake()
     {
         if (instance == null)
@@ -93,8 +80,8 @@ public class gameManager : MonoBehaviour
             // Normal game start logic
             isPaused = false;
             Time.timeScale = 1f;
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
 
             timeScaleOrig = Time.timeScale;
         }
@@ -125,23 +112,6 @@ public class gameManager : MonoBehaviour
     }
 
     // --- SETTINGS LOGIC ---
-
-    public void SetFOV(float newFOV)
-    {
-        currentFOV = newFOV; // Store the new value
-
-        // Apply to the camera in the currently loaded scene
-        Camera gameCamera = Camera.main;
-
-        if (gameCamera != null)
-        {
-            gameCamera.fieldOfView = newFOV;
-
-            // Save to PlayerPrefs for persistence between game sessions
-            PlayerPrefs.SetFloat("FOV_Setting", newFOV);
-            PlayerPrefs.Save();
-        }
-    }
 
     // --- MENU CONTROL LOGIC ---
 
@@ -230,8 +200,8 @@ public class gameManager : MonoBehaviour
         if (menuActive) menuActive.SetActive(false);
         menuActive = null;
         Time.timeScale = timeScaleOrig;
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     public void ReturnToMainMenu()
@@ -252,10 +222,7 @@ public class gameManager : MonoBehaviour
         PauseGame(menuLose);
     }
 
-    public void OpenSettingsMenu()
-    {
-        PauseGame(settingsMenu);
-    }
+ 
     //  void CheckWinCondition()
     //  {
     //     if (AllEnemiesAreDefeated())

@@ -28,10 +28,14 @@ public class health : MonoBehaviour, IDamage
         _hp -= amount;
         if (_hp <= 0f) { _hp = 0f; Die(); }
 
-        //playm sound FX 
+        //play sound FX 
 
         //SoundFXManager.instance.PlaySoundFXClip(damageSoundClip, transform, 1f);
-        SoundFXManager.instance.PlayRandomSoundFXClip(damageSoundClips, transform, 1f);
+        if (SoundFXManager.instance != null && damageSoundClips != null && damageSoundClips.Length > 0)
+        {
+            SoundFXManager.instance.PlayRandomSoundFXClip(damageSoundClips, transform, 1f);
+        }
+        Debug.Log($"[{name}] Took {amount}, HP now {_hp}", this);
     }
 
     public void Heal(float amount)
