@@ -26,18 +26,24 @@ public class buttonFunctions : MonoBehaviour
 
     public void RestartGame()
     {
+
+        GameObject oldPlayer = GameObject.FindGameObjectWithTag("Player");
+        if (oldPlayer != null)
+        {
+            Destroy(oldPlayer);
+        }
+
+
         if (gameManager.instance != null)
         {
-            // 1. **CRITICAL FIX:** Unfreeze the game time immediately.
             gameManager.instance.UnpauseGame();
         }
         else
         {
-            // Fallback for extreme cases where the Singleton is missing
             Time.timeScale = 1f;
         }
 
-        // 2. Reload the currently active scene, which now loads with time scale 1.
+        // 3. Reload the current scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 

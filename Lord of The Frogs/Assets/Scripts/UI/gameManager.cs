@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 public class gameManager : MonoBehaviour
 {
     public static gameManager instance;
+    private float timeScaleOrig;
     public static bool gameHasBooted = false;
 
 
@@ -34,6 +35,8 @@ public class gameManager : MonoBehaviour
     [SerializeField] private int xpPerLevel = 25;
 
     [SerializeField] private int enemiesAlive = 0;
+
+    private float timeScaleOrig;
 
     void Awake()
     {
@@ -219,7 +222,7 @@ public class gameManager : MonoBehaviour
         PauseGame(menuLose);
     }
 
- 
+
     //  void CheckWinCondition()
     //  {
     //     if (AllEnemiesAreDefeated())
