@@ -36,9 +36,10 @@ public class gameManager : MonoBehaviour
     [SerializeField] private int enemiesAlive = 0;
 
 
-    float timeScaleOrig = 1f;
+    //float timeScaleOrig = 1f;
 
     float timeScaleOrig;
+
 
     void Awake()
     {
@@ -112,6 +113,24 @@ public class gameManager : MonoBehaviour
                 UnpauseGame();
             }
             // NOTE: If any other menu is active (Settings/Win/Lose), ESC does nothing.
+        }
+    }
+
+    // --- SETTINGS LOGIC ---
+
+    public void SetFOV(float newFOV)
+    {
+
+        // Apply to the camera in the currently loaded scene
+        Camera gameCamera = Camera.main;
+
+        if (gameCamera != null)
+        {
+            gameCamera.fieldOfView = newFOV;
+
+            // Save to PlayerPrefs for persistence between game sessions
+            PlayerPrefs.SetFloat("FOV_Setting", newFOV);
+            PlayerPrefs.Save();
         }
     }
 
@@ -224,10 +243,6 @@ public class gameManager : MonoBehaviour
         PauseGame(menuLose);
     }
 
-    public void OpenSettingsMenu()
-    {
-        PauseGame(settingsMenu);
-    }
     //  void CheckWinCondition()
     //  {
     //     if (AllEnemiesAreDefeated())
