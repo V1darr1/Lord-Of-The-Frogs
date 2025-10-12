@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 public class gameManager : MonoBehaviour
 {
     public static gameManager instance;
+    private float timeScaleOrig;
     public static bool gameHasBooted = false;
 
 
@@ -221,7 +222,7 @@ public class gameManager : MonoBehaviour
         PauseGame(menuLose);
     }
 
- 
+
     //  void CheckWinCondition()
     //  {
     //     if (AllEnemiesAreDefeated())
