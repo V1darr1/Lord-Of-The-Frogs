@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 8582887559464647170}
   m_Layer: 7
   m_Name: Mantis_Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -145,7 +145,6 @@ MonoBehaviour:
   bomberSpeedBoost: 0
   dotZonePrefab: {fileID: 0}
   dropInterval: 0
-  defaultStagger: 0.15
 --- !u!114 &3475886256292751620
 MonoBehaviour:
   m_ObjectHideFlags: 0

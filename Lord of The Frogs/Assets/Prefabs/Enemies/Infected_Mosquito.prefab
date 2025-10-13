@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 1781444844827013608}
   m_Layer: 7
   m_Name: Infected_Mosquito
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -145,7 +145,6 @@ MonoBehaviour:
   bomberSpeedBoost: 2
   dotZonePrefab: {fileID: 0}
   dropInterval: 0
-  defaultStagger: 0.15
 --- !u!114 &5942842990431118892
 MonoBehaviour:
   m_ObjectHideFlags: 0

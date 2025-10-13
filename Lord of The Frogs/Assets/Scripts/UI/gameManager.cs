@@ -27,14 +27,14 @@ public class gameManager : MonoBehaviour
     public bool yInvertOFF;
 
 
-    [SerializeField] private int playerLevel = 1;
-    [SerializeField] private int playerXP = 0;
-    [SerializeField] private int gold = 0;
+    //[SerializeField] private int playerLevel = 1;
+    //[SerializeField] private int playerXP = 0;
+    //[SerializeField] private int gold = 0;
 
-    [SerializeField] private int xpBase = 50;
-    [SerializeField] private int xpPerLevel = 25;
+    //[SerializeField] private int xpBase = 50;
+    //[SerializeField] private int xpPerLevel = 25;
 
-    [SerializeField] private int enemiesAlive = 0;
+    //[SerializeField] private int enemiesAlive = 0;
 
     
 
@@ -214,14 +214,35 @@ public class gameManager : MonoBehaviour
 
     public void OpenWinMenu()
     {
-        PauseGame(menuWin);
+        ShowMenu(menuWin, true);
     }
 
     public void OpenLoseMenu()
     {
-        PauseGame(menuLose);
+        ShowMenu(menuLose, false);
     }
 
+    void ShowMenu(GameObject menu, bool pauseTime)
+    {
+        if (menuActive) menuActive.SetActive(false);
+        menuActive = menu;
+        if (menuActive) menuActive.SetActive(true);
+
+        if (pauseTime)
+        {
+            isPaused = true;
+            timeScaleOrig = Time.timeScale;   // remember current
+            Time.timeScale = 0f;              // pause gameplay/animators
+        }
+        else
+        {
+            isPaused = false;                 // gameplay keeps running
+            Time.timeScale = timeScaleOrig;   
+        }
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
 
     //  void CheckWinCondition()
     //  {

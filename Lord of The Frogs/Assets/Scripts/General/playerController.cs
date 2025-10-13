@@ -36,7 +36,7 @@ public class playerController : MonoBehaviour, IDamage
 
     int comboStep = 0;
     bool isAttacking = false;
-    bool canQueueNext = false;
+    //bool canQueueNext = false;
     bool queued = false;
     float comboTimer = 0f;
     float bufferTimer = 0f;
@@ -76,7 +76,6 @@ public class playerController : MonoBehaviour, IDamage
         if (bufferTimer > 0f)
         {
             bufferTimer -= Time.deltaTime;
-            if (bufferTimer <= 0f) canQueueNext = false;
         }
         if (!isAttacking && comboTimer <= 0f && comboStep > 0)
             comboStep = 0;
@@ -156,7 +155,6 @@ public class playerController : MonoBehaviour, IDamage
     void PlayComboStep(int step)
     {
         isAttacking = true;
-        canQueueNext = false;
         queued = false;
         comboTimer = comboResetTime;
 
@@ -197,7 +195,6 @@ public class playerController : MonoBehaviour, IDamage
 
     public void Anim_QueueWindowOpen()
     {
-        canQueueNext = true;
         bufferTimer = inputBufferTime;
     }
 

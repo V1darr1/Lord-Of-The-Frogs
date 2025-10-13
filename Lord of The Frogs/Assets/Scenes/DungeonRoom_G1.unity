@@ -1166,7 +1166,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b13a5cc7bd6221449b2d4fa0f9881d5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScenePortal
-  sceneToLoad: MW_Dev
+  sceneToLoad: Large_Map_1
   requiresUnlocked: {fileID: 1713044381}
 --- !u!1001 &1817467378
 PrefabInstance:

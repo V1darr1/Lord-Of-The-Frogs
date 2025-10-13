@@ -43,7 +43,7 @@ public class enemyAI : MonoBehaviour
     [SerializeField] DoTZone2D dotZonePrefab;
     [SerializeField] float dropInterval = 2.0f;
 
-    [SerializeField] float defaultStagger = 0.15f;
+    //[SerializeField] float defaultStagger = 0.15f;
     float staggerUntil;
 
     Rigidbody2D rb;
