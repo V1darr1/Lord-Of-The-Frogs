@@ -1,20 +1,19 @@
+﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class gameManager : MonoBehaviour
 {
+    // -------- Singleton / Boot --------
     public static gameManager instance;
-    private float timeScaleOrig;
     public static bool gameHasBooted = false;
-
-
     public static bool shouldOpenSettingsOnLoad = false;
 
-    // Flags and State
+    [Header("References (optional)")]
+    [Tooltip("If assigned, this Player object will be marked DontDestroyOnLoad with the manager.")]
+    public GameObject player;
 
-    public bool isPaused;
-
-    // UI References
+    [Header("Menus")]
     public GameObject menuPause;
     public GameObject settingsMenu;
     [SerializeField] GameObject menuWin;
@@ -22,32 +21,23 @@ public class gameManager : MonoBehaviour
 
     [HideInInspector] public GameObject menuActive;
 
-    // Other Variables
-    public bool yInvertON;
-    public bool yInvertOFF;
+    [Header("State")]
+    public bool isPaused;
 
+    private float timeScaleOrig = 1f;
 
-    //[SerializeField] private int playerLevel = 1;
-    //[SerializeField] private int playerXP = 0;
-    //[SerializeField] private int gold = 0;
+    private static readonly string[] MenuScenes = { "Main Menu", "Options" };
 
-    //[SerializeField] private int xpBase = 50;
-    //[SerializeField] private int xpPerLevel = 25;
+    private bool IsMenuScene(Scene s) => MenuScenes.Contains(s.name);
 
-    //[SerializeField] private int enemiesAlive = 0;
-
-    
-
-    void Awake()
+    // ---------- Lifecycle ----------
+    private void Awake()
     {
         if (instance == null)
         {
             instance = this;
-            timeScaleOrig = Time.timeScale;
-
-            // Set initial state
-            isPaused = false;
-            menuActive = null;
+            DontDestroyOnLoad(gameObject);
+            if (player) DontDestroyOnLoad(player);
         }
         else
         {
@@ -56,6 +46,9 @@ public class gameManager : MonoBehaviour
         }
     }
 
+    private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
+    private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
+
     private void OnDestroy()
     {
         if (instance == this) instance = null;
@@ -63,133 +56,115 @@ public class gameManager : MonoBehaviour
 
     private void Start()
     {
-        // BOOTSTRAP: Load Main Menu first
         if (!gameHasBooted)
         {
             gameHasBooted = true;
             SceneManager.LoadScene("Main Menu");
             return;
         }
-        health.TotalEnemiesInLevel = 0;
-        // Check for Options Boot logic
+
+        isPaused = false;
+        Time.timeScale = 1f;
+        timeScaleOrig = Time.timeScale;
+
         if (shouldOpenSettingsOnLoad)
         {
             shouldOpenSettingsOnLoad = false;
             OpenSettingsMenu();
         }
-        else
+    }
+
+    // ---------- Scene Loaded ----------
+    private void OnSceneLoaded(Scene s, LoadSceneMode mode)
+    {
+        health.TotalEnemiesInLevel = 0;
+
+        if (IsMenuScene(s))
         {
-            // Normal game start logic
-            isPaused = false;
-            Time.timeScale = 1f;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
-
-            timeScaleOrig = Time.timeScale;
+            return;
         }
 
+        isPaused = false;
+        menuActive = null;
+        Time.timeScale = 1f;
+        timeScaleOrig = 1f;
 
+        var pgo = player ? player : GameObject.FindGameObjectWithTag("Player");
+        if (!pgo) { Debug.LogWarning("[GM Spawn] No Player found after scene load."); return; }
+
+        var spawns = FindObjectsByType<PlayerSpawnPoint>(FindObjectsSortMode.None);
+        if (spawns == null || spawns.Length == 0) { Debug.LogWarning("[GM Spawn] No PlayerSpawnPoint found in this scene."); return; }
+
+        string requested = ScenePortal.NextSpawnId;
+        PlayerSpawnPoint chosen = null;
+
+        if (!string.IsNullOrEmpty(requested))
+            chosen = spawns.FirstOrDefault(p => p && p.id == requested);
+
+        if (chosen == null)
+        {
+            chosen = spawns.FirstOrDefault(p => p && p.id == "LM1") ?? spawns[0];
+            if (!string.IsNullOrEmpty(requested))
+                Debug.LogWarning($"[GM Spawn] Requested '{requested}' not found. Using '{chosen.id}'.");
+        }
+
+        var w = chosen.transform.position;
+        var cur = pgo.transform.position;
+        pgo.transform.position = new Vector3(w.x, w.y, cur.z);
+
+        var rb2d = pgo.GetComponent<Rigidbody2D>();
+        if (rb2d)
+        {
+#if UNITY_6000_0_OR_NEWER
+            rb2d.linearVelocity = Vector2.zero;
+#else
+        rb2d.velocity = Vector2.zero;
+#endif
+            rb2d.angularVelocity = 0f;
+        }
+
+        ScenePortal.NextSpawnId = null;
+        Debug.Log($"[GM Spawn] Scene '{s.name}' → '{chosen.id}' @ {w}");
+
+        // ---- Ensure UNPAUSED again next frame (beats late menu code) ----
+        StartCoroutine(EnsureUnpausedNextFrame());
     }
 
-    void Update()
+    private System.Collections.IEnumerator EnsureUnpausedNextFrame()
     {
-        // The only reliable way to handle the ESC key is to check the current state 
-        // and ONLY allow toggling between NO MENU and the PAUSE MENU.
+        yield return null;
+        isPaused = false;
+        menuActive = null;
+        Time.timeScale = 1f;
+        Debug.Log($"[GM] Post-frame unpause: isPaused={isPaused}, timeScale={Time.timeScale}");
+    }
+
+    // ---------- Update (ESC handling) ----------
+    private void Update()
+    {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // 1. If NO menu is active, open the PAUSE MENU.
-            if (menuActive == null)
-            {
-                PauseGame(menuPause);
-            }
-            // 2. If the PAUSE MENU is active, close it (Unpause).
-            else if (menuActive == menuPause)
-            {
-                UnpauseGame();
-            }
-            // NOTE: If any other menu is active (Settings/Win/Lose), ESC does nothing.
+            if (menuActive == null) PauseGame(menuPause);
+            else if (menuActive == menuPause) UnpauseGame();
         }
     }
 
-    // --- SETTINGS LOGIC ---
-
-    // --- MENU CONTROL LOGIC ---
-
-    public void OpenSettingsMenu()
+    // ---------- Menu / Pause ----------
+    public void PauseGame(GameObject menuToShow)
     {
-        // FIX: Hide the Pause Buttons panel before showing the Settings panel
-        if (menuPause != null)
-        {
-            menuPause.SetActive(false);
-        }
+        if (menuToShow == null) return;
 
-        // Pause the game and activate the Settings Menu panel
-        PauseGame(settingsMenu);
-    }
-
-    public void ReturnToPauseMenu(GameObject menu)
-    {
-        // Hide the current active menu (Settings Menu)
-        if (menuActive)
-        {
-            menuActive.SetActive(false);
-        }
-
-        // Explicitly show the Pause Buttons Panel
-        if (menuPause != null)
-        {
-            menuPause.SetActive(true);
-        }
-
-        // Reset active menu state
-        menuActive = menuPause;
-
-        // Ensure time remains paused
-        Time.timeScale = 0f;
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-    }
-
-    // ---------- XP / Level ----------
-    //public void AddXP(int amount)
-    //{
-    //if (amount <= 0) return;
-    // playerXP += amount;
-
-    //while (playerXP >= XPNeededForNext())
-    // {
-    //   playerXP -= XPNeededForNext();
-    // playerLevel++;
-    // TODO: grant stat points, heal, etc. (hook UI here)
-    // }
-    // OnXPChanged?.Invoke(playerXP, playerLevel);
-    // SaveProgress();
-    //  }
-
-    // ---------- Gold ----------
-    //public void AddGold(int amount)
-    //  {
-    // gold = Mathf.Max(0, gold + amount);
-    //OnGoldChanged?.Invoke(gold);
-    //SaveProgress();
-    //  }
-
-    // public bool TrySpendGold(int cost)
-    // {
-    // if (gold < cost) return false;
-    // gold -= cost;
-    // OnGoldChanged?.Invoke(gold);
-    //SaveProgress();
-    //return true;
-    //}
-
-    public void PauseGame(GameObject menu)
-    {
         isPaused = true;
-        if (menuActive) menuActive.SetActive(false);
-        menuActive = menu;
-        if (menuActive) menuActive.SetActive(true);
-        Time.timeScale = 0;
+        timeScaleOrig = Time.timeScale;
+        Time.timeScale = 0f;
+
+        if (menuActive && menuActive != menuToShow) menuActive.SetActive(false);
+
+        menuActive = menuToShow;
+        menuActive.SetActive(true);
+
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
@@ -197,9 +172,72 @@ public class gameManager : MonoBehaviour
     public void UnpauseGame()
     {
         isPaused = false;
+
         if (menuActive) menuActive.SetActive(false);
         menuActive = null;
+
         Time.timeScale = timeScaleOrig;
+    }
+
+    public void OpenSettingsMenu()
+    {
+        if (!settingsMenu) return;
+
+        // Hide Pause buttons if open
+        if (menuPause) menuPause.SetActive(false);
+
+        PauseGame(settingsMenu);
+    }
+
+    public void ReturnToPauseMenu()
+    {
+        if (menuActive) menuActive.SetActive(false);
+        if (menuPause) menuPause.SetActive(true);
+        menuActive = menuPause;
+
+        isPaused = true;
+        Time.timeScale = 0f;
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    public void OpenWinMenu(bool pauseTime = true)
+    {
+        if (!menuWin) return;
+
+        if (menuActive) menuActive.SetActive(false);
+        menuActive = menuWin;
+        menuActive.SetActive(true);
+
+        if (pauseTime)
+        {
+            isPaused = true;
+            timeScaleOrig = Time.timeScale;
+            Time.timeScale = 0f;
+        }
+        else
+        {
+            isPaused = false;
+            Time.timeScale = timeScaleOrig;
+        }
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    public void OpenLoseMenu()
+    {
+        if (!menuLose) return;
+
+        if (menuActive) menuActive.SetActive(false);
+        menuActive = menuLose;
+        menuActive.SetActive(true);
+
+        isPaused = true;
+        timeScaleOrig = Time.timeScale;
+        Time.timeScale = 0f;
+
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
@@ -209,58 +247,7 @@ public class gameManager : MonoBehaviour
         gameHasBooted = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+        Time.timeScale = 1f;
         SceneManager.LoadScene("Main Menu");
     }
-
-    public void OpenWinMenu()
-    {
-        ShowMenu(menuWin, true);
-    }
-
-    public void OpenLoseMenu()
-    {
-        ShowMenu(menuLose, false);
-    }
-
-    void ShowMenu(GameObject menu, bool pauseTime)
-    {
-        if (menuActive) menuActive.SetActive(false);
-        menuActive = menu;
-        if (menuActive) menuActive.SetActive(true);
-
-        if (pauseTime)
-        {
-            isPaused = true;
-            timeScaleOrig = Time.timeScale;   // remember current
-            Time.timeScale = 0f;              // pause gameplay/animators
-        }
-        else
-        {
-            isPaused = false;                 // gameplay keeps running
-            Time.timeScale = timeScaleOrig;   
-        }
-
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-    }
-
-    //  void CheckWinCondition()
-    //  {
-    //     if (AllEnemiesAreDefeated())
-    //     {
-
-    //         StartCoroutine(ExecuteWinCondition());
-    //     }
-    //   }
-    // IEnumerator ExecuteWinCondition()
-    //  {
-    //      // Wait for the end of the current frame
-    //   yield return new WaitForEndOfFrame();
-
-    // Now, call the function that opens the menu
-    //     if (gameManager.instance != null)
-    //    {
-    //         gameManager.instance.OpenWinMenu();
-    //    }
-    //  }
 }

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class playerController : MonoBehaviour, IDamage
 {
@@ -9,7 +9,7 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] float attackRange = 1.6f;     // radius of cone
     [SerializeField] float attackArcDeg = 110f;    // cone width
     [SerializeField] int attackDamage = 20;
-    [SerializeField] float knockback = 6f;
+    //[SerializeField] float knockback = 6f;
     [SerializeField] LayerMask enemyMask;
 
     [Header("Optional")]
@@ -170,28 +170,44 @@ public class playerController : MonoBehaviour, IDamage
     public void Anim_Hit()
     {
         Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
-
-        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            origin, attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value
+        );
 
         if (hits == null || hits.Length == 0) return;
 
         float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
+        bool isFinisher = (comboStep == 3);
+
+        // prevent double hits on same enemy
+        var processed = new System.Collections.Generic.HashSet<GameObject>();
 
         foreach (var h in hits)
         {
             if (!h) continue;
+            GameObject enemy = h.gameObject;
+            if (processed.Contains(enemy)) continue;
+            processed.Add(enemy);
+
             Vector2 to = (Vector2)h.bounds.center - origin;
             float mag = to.magnitude;
             if (mag < 0.0001f) continue;
-
             Vector2 dir = to / mag;
-            if (Vector2.Dot(dir, faceDir) >= cosHalf)
+            if (Vector2.Dot(dir, faceDir) < cosHalf) continue;
+
+            DamageInvoker.ApplyHit(enemy, attackDamage, origin, 0f);
+
+            var react = enemy.GetComponent<EnemyHitReact>();
+            if (react)
             {
-                float kb = (comboStep == 3) ? knockback : 0f;
-                DamageInvoker.ApplyHit(h.gameObject, attackDamage, origin, kb);
+                if (!isFinisher)
+                    react.ApplyStagger(0.25f);
+                else
+                    react.ApplyKnockbackFromPosition(origin);
             }
         }
     }
+
 
     public void Anim_QueueWindowOpen()
     {
@@ -217,34 +233,6 @@ public class playerController : MonoBehaviour, IDamage
         }
         if (comboTimer > 0f || comboStep >= maxCombo)
             comboStep = 0;
-    }
-
-    void AttackCone()
-    {
-        Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
-
-        // Collect by radius first, then filter by angle
-        Collider2D[] hits = Physics2D.OverlapCircleAll(
-            origin, attackRange,
-            enemyMask.value == 0 ? ~0 : enemyMask.value
-        );
-        if (hits == null || hits.Length == 0) return;
-
-        float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
-
-        foreach (var h in hits)
-        {
-            if (!h) continue;
-            Vector2 to = (Vector2)h.bounds.center - origin;
-            float mag = to.magnitude;
-            if (mag < 0.0001f) continue;
-
-            Vector2 dir = to / mag;
-            if (Vector2.Dot(dir, faceDir) >= cosHalf)
-            {
-                DamageInvoker.ApplyHit(h.gameObject, attackDamage, origin, knockback);
-            }
-        }
     }
 
     // ---------- Animation ----------

@@ -18,6 +18,8 @@ GameObject:
   - component: {fileID: 6691897546875699985}
   - component: {fileID: 8240460856372801133}
   - component: {fileID: 2181942955122365532}
+  - component: {fileID: 2480507378322846364}
+  - component: {fileID: 7369708832177724126}
   - component: {fileID: 3629142604303236428}
   m_Layer: 6
   m_Name: Player
@@ -59,6 +61,7 @@ MonoBehaviour:
   destroyOnDeath: 0
   healable: 1
   damageSoundClips: []
+  triggersWinOnDeath: 0
 --- !u!114 &2614528581860896075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89,7 +92,7 @@ MonoBehaviour:
   attackRange: 0.43
   attackArcDeg: 150
   attackDamage: 25
-  knockback: 6
+  knockback: 0
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
@@ -99,6 +102,12 @@ MonoBehaviour:
   comboResetTime: 0.7
   inputBufferTime: 0.35
   postEndGrace: 0.18
+  AttackSoundClips:
+  - {fileID: 8300000, guid: 2920e55d8f0e7c746b862c85adc9762f, type: 3}
+  - {fileID: 8300000, guid: 45377702880e89849b4b99ed81588485, type: 3}
+  - {fileID: 8300000, guid: 5d39c14ffd62183408af5ba32c83f417, type: 3}
+  DeathSoundClip:
+  - {fileID: 8300000, guid: c456121e479beb244be123229fc12f89, type: 3}
 --- !u!114 &5232386320083338735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,6 +312,56 @@ CapsuleCollider2D:
   m_Offset: {x: 0.018450916, y: -0.03533855}
   m_Size: {x: 0.35368955, y: 0.62894505}
   m_Direction: 0
+--- !u!114 &2480507378322846364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266519665739511368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a04973fba73e0f24d8f302c9293b944f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwordSpinSkill
+  spinKey: 32
+  spinDuration: 2
+  tickRate: 0.1
+  cooldown: 2
+  damagePerTick: 10
+  knockback: 4
+  radius: 1.8
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 128
+  grantIFrames: 0
+  playerLayerName: Player
+  enemyLayerName: Enemy
+  spinSfx: {fileID: 0}
+  spinVfxPrefab: {fileID: 0}
+--- !u!114 &7369708832177724126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266519665739511368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38733ebffdc58ec4992e31741a0ed0b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashSkill2D
+  dashKey: 304
+  mouseButton: 1
+  towardsMouse: 1
+  fallbackDir: {x: 1, y: 0}
+  dashSpeed: 18
+  dashTime: 0.12
+  cooldown: 0.8
+  grantIFrames: 1
+  playerLayerName: Player
+  enemyLayerName: Enemy
+  dashSfx: {fileID: 0}
 --- !u!114 &3629142604303236428
 MonoBehaviour:
   m_ObjectHideFlags: 0

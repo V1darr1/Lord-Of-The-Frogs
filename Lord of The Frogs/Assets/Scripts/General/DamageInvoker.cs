@@ -2,30 +2,32 @@ using UnityEngine;
 
 public static class DamageInvoker
 {
- 
-    // Applies damage to a target. 
-    // Tries common method names (ApplyDamage, ApplyDamge, TakeDamage, Damage, Hit)
-    public static void ApplyHit(GameObject target, int amount, Vector2 hitFrom, float knockbackForce = 0f)
+    /// <summary>
+    /// Apply damage ONLY. No physics, no legacy SendMessage hooks.
+    /// Finds 'health' on this object or a parent, then calls ApplyDamage.
+    /// </summary>
+    public static void ApplyHit(GameObject hitObject, int amount, Vector2 hitFrom, float _unused = 0f)
     {
-        if (!target) return;
+        if (!hitObject) return;
 
+        // route to the object that actually has 'health'
+        var hp = hitObject.GetComponent<health>();
+        if (!hp) hp = hitObject.GetComponentInParent<health>();
+        if (!hp) return;
+
+        // floating damage numbers (optional)
         if (DamageNumberSpawner.Instance != null)
         {
-            DamageNumberSpawner.Instance.Spawn(target.transform.position + Vector3.up * 0.5f, amount);
+            var t = hp.transform; // show where the health component lives
+            DamageNumberSpawner.Instance.Spawn(t.position + Vector3.up * 0.5f, amount);
         }
 
+        // ---- DAMAGE ONLY ----
+        hp.ApplyDamage(amount);
 
-        var rb = target.GetComponent<Rigidbody2D>();
-        if (rb && knockbackForce > 0f)
-        {
-            Vector2 dir = ((Vector2)target.transform.position - hitFrom).normalized;
-            rb.AddForce(dir * knockbackForce, ForceMode2D.Impulse);
-        }
-
-
-        target.SendMessage("ApplyDamage", amount, SendMessageOptions.DontRequireReceiver);
-        target.SendMessage("TakeDamage", amount, SendMessageOptions.DontRequireReceiver);
-        target.SendMessage("Damage", amount, SendMessageOptions.DontRequireReceiver);
-        target.SendMessage("Hit", amount, SendMessageOptions.DontRequireReceiver);
+        // IMPORTANT:
+        // - no AddForce
+        // - no SendMessage("Hit"/"Damage"/"TakeDamage")
+        // If you really need those for some other system, add a bool flag and keep it OFF for enemies.
     }
 }
