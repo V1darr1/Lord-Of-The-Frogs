@@ -9,6 +9,7 @@ public class health : MonoBehaviour, IDamage
     [SerializeField] private bool destroyOnDeath = true;
     [SerializeField] private bool healable = false;
     [SerializeField] private AudioClip[] damageSoundClips;
+    [SerializeField] bool triggersWinOnDeath = false;
 
     private float _hp;
 
@@ -48,32 +49,10 @@ public class health : MonoBehaviour, IDamage
 
     private void Die()
     {
-        if (gameObject.CompareTag("Player"))
-        {
-            //Lose
-            if (gameManager.instance != null)
-            {
-                gameManager.instance.OpenLoseMenu();
-            }
-        }
-        else if (gameObject.CompareTag("Enemy"))
-        {
-            TotalEnemiesInLevel--;
-
-            if (TotalEnemiesInLevel <= 0)
-            {
-                if (gameManager.instance != null)
-                {
-                    gameManager.instance.OpenWinMenu();
-                }
-            }
-        }
         onDeath?.Invoke();
+        if (triggersWinOnDeath && gameManager.instance)
+            gameManager.instance.OpenWinMenu();
 
-
-        if (destroyOnDeath)
-        {
-            Destroy(gameObject);
-        }
+        if (destroyOnDeath) Destroy(gameObject);
     }
 }

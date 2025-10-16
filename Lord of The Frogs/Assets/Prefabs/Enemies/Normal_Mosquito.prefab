@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 5512153582219106653}
   m_Layer: 7
   m_Name: Normal_Mosquito
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -90,6 +90,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: f4d2e42044c7ee441a178daa96d1f651, type: 3}
   - {fileID: 8300000, guid: cf5fa684798cf24479c4f5496a89e3d6, type: 3}
   - {fileID: 8300000, guid: 2d70decbb2bbf8b4c8efb52c0520629b, type: 3}
+  triggersWinOnDeath: 0
 --- !u!114 &5590387263295822606
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,7 +146,6 @@ MonoBehaviour:
   bomberSpeedBoost: 0
   dotZonePrefab: {fileID: 0}
   dropInterval: 0
-  defaultStagger: 0.15
 --- !u!114 &-1143360811467118766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,13 +158,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f39333816d2c1bf4ebaa63b698157be7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHitReact
-  sprites:
-  - {fileID: 7479806712923583404}
+  staggerDuration: 0.25
+  finisherKB_Distance: 0.2
+  finisherKB_Time: 0.03
+  visualRoot: {fileID: 0}
   flashColor: {r: 1, g: 0.4116228, b: 0, a: 1}
   flashTime: 0.1
-  shakeTime: 0.1
-  shakeMagnitude: 0.06
-  staggerTime: 0.25
+  shakeIntensity: 0.1
+  shakeDuration: 0.1
 --- !u!212 &7479806712923583404
 SpriteRenderer:
   m_ObjectHideFlags: 0
