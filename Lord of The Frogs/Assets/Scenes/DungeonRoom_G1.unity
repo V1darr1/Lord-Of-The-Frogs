@@ -1168,6 +1168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScenePortal
   sceneToLoad: Large_Map_1
   spawnId: default
+  enterCooldown: 0.1
 --- !u!1001 &1817467378
 PrefabInstance:
   m_ObjectHideFlags: 0
