@@ -42,7 +42,7 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] private AudioClip[] AttackSoundClips;
     [SerializeField] private AudioClip[] DeathSoundClip;
 
-    // --- NEW: hard gate flag ---
+    // death gate
     bool isDead = false;
 
     void Awake()
@@ -52,18 +52,30 @@ public class playerController : MonoBehaviour, IDamage
         hp = GetComponent<health>();
         cam = Camera.main;
 
-        // Subscribe to death; also set fail-safe isDead if hp starts at 0
-        if (hp)
-        {
-            hp.onDeath += OnDeath;
-            if (!hp.isAlive) MarkDeadAndFreeze(); // covers scene reload / continue scenarios
-        }
+        if (hp) hp.onDeath += OnDeath;
+
+        // Do NOT mark dead in Awake; health init order can be late.
+        // Optional: keep normal update mode while alive
+        if (anim) anim.updateMode = AnimatorUpdateMode.Normal;
+    }
+
+    void OnDisable()
+    {
+        if (hp) hp.onDeath -= OnDeath;
     }
 
     void Update()
     {
-        // Pause gate
-        if (gameManager.instance != null && gameManager.instance.isPaused)
+        // 1) If HP just hit zero and we haven't processed death yet, fire it NOW.
+        //    This ensures the anim trigger happens even if pause kicks in this frame.
+        if (!isDead && hp && !hp.isAlive)
+        {
+            MarkDeadAndFreeze();
+            // fall through — we still want to skip controls below
+        }
+
+        // 2) Pause gate — BUT allow the death frame to pass through so the anim trigger can set.
+        if ((gameManager.instance != null && gameManager.instance.isPaused) && !isDead)
         {
 #if UNITY_6000_0_OR_NEWER
             rb.linearVelocity = Vector2.zero;
@@ -73,10 +85,9 @@ public class playerController : MonoBehaviour, IDamage
             return;
         }
 
-        // --- NEW: health gate (works even if onDeath hasn't fired yet) ---
+        // 3) If dead (or HP is 0 after the above), freeze controls/motion every frame.
         if (isDead || (hp && !hp.isAlive))
         {
-            // Keep frozen every frame so nothing else can nudge us
 #if UNITY_6000_0_OR_NEWER
             rb.linearVelocity = Vector2.zero;
 #else
@@ -87,6 +98,7 @@ public class playerController : MonoBehaviour, IDamage
             return;
         }
 
+        // ---- Alive: normal loop ----
         UpdateAimFromMouse();
         HandleMove();
         HandleAttack();
@@ -168,7 +180,6 @@ public class playerController : MonoBehaviour, IDamage
 
     void PlayComboStep(int step)
     {
-        // Dead check to be extra safe if an event slips through
         if (isDead || (hp && !hp.isAlive)) return;
 
         isAttacking = true; queued = false; comboTimer = comboResetTime;
@@ -199,7 +210,6 @@ public class playerController : MonoBehaviour, IDamage
         bool isFinisher = (comboStep == 3);
 
         var processed = new HashSet<GameObject>();
-
         foreach (var h in hits)
         {
             if (!h) continue;
@@ -211,17 +221,13 @@ public class playerController : MonoBehaviour, IDamage
             Vector2 dir = to / mag;
             if (Vector2.Dot(dir, faceDir) < cosHalf) continue;
 
-            // Damage (no physics force)
             DamageInvoker.ApplyHit(enemy, attackDamage, origin, 0f);
 
-            // Reactions
             var react = enemy.GetComponent<EnemyHitReact>();
             if (!react) continue;
 
-            if (!isFinisher)
-                react.ApplyStagger(0.25f);                  // hits 1–2: freeze only
-            else
-                react.ApplyKnockbackFromPosition(origin);   // hit 3: small shove
+            if (!isFinisher) react.ApplyStagger(0.25f);
+            else react.ApplyKnockbackFromPosition(origin);
         }
     }
 
@@ -240,19 +246,6 @@ public class playerController : MonoBehaviour, IDamage
         if (comboTimer > 0f || comboStep >= maxCombo) comboStep = 0;
     }
 
-    // ---------- Anim params ----------
-    void UpdateAnim()
-    {
-        if (!anim) return;
-        anim.SetFloat("Movement X", moveDir.x);
-        anim.SetFloat("Movement Y", moveDir.y);
-#if UNITY_6000_0_OR_NEWER
-        anim.SetFloat("Speed", rb.linearVelocity.sqrMagnitude);
-#else
-        anim.SetFloat("Speed", rb.velocity.sqrMagnitude);
-#endif
-    }
-
     // ---------- Taking damage ----------
     public void ApplyDamage(int amount)
     {
@@ -262,11 +255,11 @@ public class playerController : MonoBehaviour, IDamage
 
     void OnDeath()
     {
-        // In case health fires onDeath
+        if (isDead) return;
         MarkDeadAndFreeze();
     }
 
-    // --- NEW: consolidated dead path ---
+    // ---------- Unified death path ----------
     void MarkDeadAndFreeze()
     {
         if (isDead) return;
@@ -283,12 +276,30 @@ public class playerController : MonoBehaviour, IDamage
         moveDir = Vector2.zero;
         isAttacking = false;
 
-        if (anim) anim.SetTrigger("Die");
+        // Ensure the death animation actually plays, even if the game pauses.
+        if (anim)
+        {
+            anim.updateMode = AnimatorUpdateMode.UnscaledTime; // play while paused
+            anim.SetBool("Die", true);                        // for controllers using a bool
+            anim.ResetTrigger("Attack1");
+            anim.ResetTrigger("Attack2");
+            anim.ResetTrigger("Attack3");
+            anim.SetTrigger("Die");                            // for controllers using a trigger
+        }
+        // keep the component enabled so Update keeps the body frozen
+    }
 
-        // Keep the script enabled so Update can keep the rigidbody frozen,
-        // but the health/input/attacks are already gated by isDead.
-        // If you prefer to fully disable, uncomment below AND keep the health gate at top of Update.
-        // enabled = false;
+    // ---------- Anim params ----------
+    void UpdateAnim()
+    {
+        if (!anim) return;
+        anim.SetFloat("Movement X", moveDir.x);
+        anim.SetFloat("Movement Y", moveDir.y);
+#if UNITY_6000_0_OR_NEWER
+        anim.SetFloat("Speed", rb.linearVelocity.sqrMagnitude);
+#else
+        anim.SetFloat("Speed", rb.velocity.sqrMagnitude);
+#endif
     }
 
     // ---------- Gizmos ----------
