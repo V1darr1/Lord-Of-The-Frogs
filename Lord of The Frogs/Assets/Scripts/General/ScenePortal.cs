@@ -4,26 +4,28 @@ using UnityEngine.SceneManagement;
 public class ScenePortal : MonoBehaviour
 {
     [SerializeField] string sceneToLoad;
-    [SerializeField] DoorLock requiresUnlocked;
+    [SerializeField] string spawnId = "default";
+    [SerializeField] float enterCooldown = 0.1f;
+    public static string NextSpawnId;
+    float enabledAt;
+
+    private void OnEnable() => enabledAt = Time.unscaledTime;
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
 
-        if (requiresUnlocked && requiresUnlocked.IsLocked) return;
-
-        if (string.IsNullOrWhiteSpace(sceneToLoad))
+        var doorLock = GetComponent<DoorLock>() ?? GetComponentInParent<DoorLock>();
+        if (doorLock && doorLock.IsLocked)
         {
-            Debug.LogError($"[ScenePortal:{name}] Scene To Load is empty.");
+            var rb = other.attachedRigidbody;
+            if (rb) rb.linearVelocity = Vector2.zero;
             return;
         }
-
-        if (!Application.CanStreamedLevelBeLoaded(sceneToLoad))
-        {
-            Debug.LogError($"[ScenePortal:{name}] Scene '{sceneToLoad}' is not in Build Settings.");
+        if (Time.unscaledTime - enabledAt < enterCooldown)
             return;
-        }
 
+        NextSpawnId = spawnId;
         SceneManager.LoadScene(sceneToLoad);
     }
 }
