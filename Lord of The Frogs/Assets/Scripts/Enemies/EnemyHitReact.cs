@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(enemyAI))]
@@ -7,12 +6,12 @@ using UnityEngine;
 public class EnemyHitReact : MonoBehaviour
 {
     [Header("Stagger / Knockback")]
-    [SerializeField] float staggerDuration = 0.25f;      // hits 1–2
-    [SerializeField] float finisherKB_Distance = 0.45f;  // hit 3
-    [SerializeField] float finisherKB_Time = 0.06f;
+    [SerializeField] float staggerDuration = 0.25f;      // hits 1–2 freeze time
+    [SerializeField] float finisherKB_Distance = 0.45f;  // hit 3 push distance
+    [SerializeField] float finisherKB_Time = 0.06f;      // hit 3 push time
 
-    [Header("Visuals (cosmetic only)")]
-    [SerializeField] Transform visualRoot;                // sprite child for shake; if null auto-pick
+    [Header("Visuals")]
+    [SerializeField] Transform visualRoot;                // sprite child
     [SerializeField] Color flashColor = new Color(1f, 0.5f, 0f);
     [SerializeField] float flashTime = 0.12f;
     [SerializeField] float shakeIntensity = 0.1f;
@@ -24,14 +23,8 @@ public class EnemyHitReact : MonoBehaviour
     Color baseColor = Color.white;
     Vector3 visualBaseLocalPos;
 
-    // saved physics state
     RigidbodyType2D savedBodyType;
     RigidbodyInterpolation2D savedInterp;
-
-    // colliders to toggle ignores
-    Collider2D[] myCols;
-    static Collider2D[] cachedPlayerCols;
-
     Coroutine visualCo;
     Coroutine restoreCo;
 
@@ -43,23 +36,20 @@ public class EnemyHitReact : MonoBehaviour
         if (!visualRoot) visualRoot = sr ? sr.transform : transform;
         if (sr) baseColor = sr.color;
         visualBaseLocalPos = visualRoot.localPosition;
-
-        myCols = GetComponentsInChildren<Collider2D>(includeInactive: false);
-        savedBodyType = rb.bodyType;
-        savedInterp = rb.interpolation;
     }
 
-    // ---------- HITS 1–2: freeze with kinematic + ignore collisions ----------
+    // -------------------- hits 1–2: freeze + flash only --------------------
     public void ApplyStagger(float duration)
     {
-        float d = (duration > 0f) ? duration : staggerDuration;
+        float d = duration > 0f ? duration : staggerDuration;
 
-        // freeze AI logic timers
         if (ai) ai.Stagger(d);
 
-        // save & set to kinematic so physics can't push it
+        // temporarily set kinematic to stop any physics reaction
         savedBodyType = rb.bodyType;
         savedInterp = rb.interpolation;
+        rb.bodyType = RigidbodyType2D.Kinematic;
+        rb.interpolation = RigidbodyInterpolation2D.None;
 
 #if UNITY_6000_0_OR_NEWER
         rb.linearVelocity = Vector2.zero;
@@ -68,15 +58,9 @@ public class EnemyHitReact : MonoBehaviour
 #endif
         rb.angularVelocity = 0f;
 
-        rb.bodyType = RigidbodyType2D.Kinematic;
-        rb.interpolation = RigidbodyInterpolation2D.None;
-
-        // temporarily ignore collisions with player to avoid separation impulses
-        TogglePlayerCollision(ignore: true);
-
-        // visuals
+        // flash only (no shake)
         if (visualCo != null) StopCoroutine(visualCo);
-        visualCo = StartCoroutine(CoFlashAndShake());
+        visualCo = StartCoroutine(CoFlashOnly());
 
         if (restoreCo != null) StopCoroutine(restoreCo);
         restoreCo = StartCoroutine(CoRestoreAfter(d));
@@ -85,8 +69,6 @@ public class EnemyHitReact : MonoBehaviour
     IEnumerator CoRestoreAfter(float delay)
     {
         yield return new WaitForSeconds(delay);
-
-        // restore physics state
         rb.bodyType = savedBodyType;
         rb.interpolation = savedInterp;
 #if UNITY_6000_0_OR_NEWER
@@ -95,37 +77,25 @@ public class EnemyHitReact : MonoBehaviour
         rb.velocity = Vector2.zero;
 #endif
         rb.angularVelocity = 0f;
-
-        TogglePlayerCollision(ignore: false);
     }
 
-    // ---------- HIT 3: small, fixed shove ----------
+    // -------------------- hit 3: knockback + flash + shake --------------------
     public void ApplyKnockbackFromPosition(Vector2 attackerPos)
     {
-        // ensure not kinematic so MovePosition works as expected on a Dynamic body
-        rb.bodyType = savedBodyType == 0 ? RigidbodyType2D.Dynamic : savedBodyType;
-        rb.interpolation = savedInterp;
-
         if (ai) ai.Stagger(finisherKB_Time);
+
+        // make sure we’re dynamic again
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
 
         if (visualCo != null) StopCoroutine(visualCo);
         visualCo = StartCoroutine(CoFlashAndShake());
-
-        StartCoroutine(CoFixedKnockback(attackerPos));
+        StartCoroutine(CoKnockback(attackerPos));
     }
 
-    IEnumerator CoFixedKnockback(Vector2 attackerPos)
+    IEnumerator CoKnockback(Vector2 attackerPos)
     {
-        Vector2 dir = (Vector2)transform.position - attackerPos;
-        dir = (dir.sqrMagnitude > 1e-6f) ? dir.normalized : Vector2.right;
-
-#if UNITY_6000_0_OR_NEWER
-        rb.linearVelocity = Vector2.zero;
-#else
-        rb.velocity = Vector2.zero;
-#endif
-        rb.angularVelocity = 0f;
-
+        Vector2 dir = ((Vector2)transform.position - attackerPos).normalized;
         Vector2 start = rb.position;
         Vector2 end = start + dir * finisherKB_Distance;
 
@@ -135,14 +105,22 @@ public class EnemyHitReact : MonoBehaviour
         {
             t += Time.fixedDeltaTime;
             float a = Mathf.Clamp01(t / finisherKB_Time);
-            float e = 1f - (1f - a) * (1f - a);
+            float e = 1f - (1f - a) * (1f - a); // ease-out
             rb.MovePosition(Vector2.Lerp(start, end, e));
             yield return wait;
         }
         rb.MovePosition(end);
     }
 
-    // ---------- visuals ----------
+    // -------------------- visual helpers --------------------
+    IEnumerator CoFlashOnly()
+    {
+        if (!sr) yield break;
+        sr.color = flashColor;
+        yield return new WaitForSeconds(flashTime);
+        sr.color = baseColor;
+    }
+
     IEnumerator CoFlashAndShake()
     {
         if (sr)
@@ -161,33 +139,4 @@ public class EnemyHitReact : MonoBehaviour
         }
         visualRoot.localPosition = visualBaseLocalPos;
     }
-
-    // cache player colliders and toggle ignore
-    void TogglePlayerCollision(bool ignore)
-    {
-        if (cachedPlayerCols == null)
-        {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p) cachedPlayerCols = p.GetComponentsInChildren<Collider2D>(includeInactive: false);
-        }
-        if (cachedPlayerCols == null || myCols == null) return;
-
-        foreach (var ec in myCols)
-            if (ec && ec.enabled)
-                foreach (var pc in cachedPlayerCols)
-                    if (pc && pc.enabled)
-                        Physics2D.IgnoreCollision(ec, pc, ignore);
-    }
-
-#if UNITY_EDITOR
-    void OnDrawGizmos()
-    {
-        if (!Application.isPlaying) return;
-        if (rb && rb.bodyType == RigidbodyType2D.Kinematic)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, 0.4f);
-        }
-    }
-#endif
 }
