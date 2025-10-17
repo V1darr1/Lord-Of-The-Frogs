@@ -5215,7 +5215,7 @@ MonoBehaviour:
   grantIFrames: 1
   playerLayerName: Player
   enemyLayerName: Enemy
-  dashSfx: {fileID: 0}
+  dashSfx: {fileID: 8300000, guid: 23a4b5380abc75b49bd830f0b600d1f3, type: 3}
 --- !u!114 &1167601703
 MonoBehaviour:
   m_ObjectHideFlags: 0
