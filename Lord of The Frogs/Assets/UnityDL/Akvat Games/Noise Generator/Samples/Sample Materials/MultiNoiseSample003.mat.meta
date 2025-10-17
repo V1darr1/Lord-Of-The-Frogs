@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3d36224c42f474181b8b15309d47b672
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 296428
+  packageName: Akvat Games Noise Generator
+  packageVersion: 1.0
+  assetPath: Assets/Akvat Games/Noise Generator/Samples/Sample Materials/MultiNoiseSample003.mat
+  uploadId: 692865

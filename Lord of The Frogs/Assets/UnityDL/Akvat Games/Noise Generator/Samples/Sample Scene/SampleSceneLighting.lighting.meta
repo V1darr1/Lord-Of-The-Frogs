@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0cf7a6d23fa0846da9fcb4ddf497e370
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4890085278179872738
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 296428
+  packageName: Akvat Games Noise Generator
+  packageVersion: 1.0
+  assetPath: Assets/Akvat Games/Noise Generator/Samples/Sample Scene/SampleSceneLighting.lighting
+  uploadId: 692865
