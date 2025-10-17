@@ -117,35 +117,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 010acdc1e4981db44a2e263792f22f65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::enemyAI
-  type: 1
   moveSpeed: 1
   stopDistance: 3
   pathRefresh: 0.1
   detectionRadius: 4.5
-  useVisionCone: 0
-  visionConeDeg: 110
+  loseSightRadius: 6
+  memoryTime: 2
   losBlockers:
     serializedVersion: 2
     m_Bits: 1024
-  loseSightRadius: 6
-  memoryTime: 2
+  type: 1
   damage: 15
   attackRange: 3
   attackCooldown: 2
+  hitOrigin: {fileID: 6274003796212649336}
   playerMask:
     serializedVersion: 2
     m_Bits: 64
-  hitOrigin: {fileID: 6274003796212649336}
-  sprite: {fileID: 7479806712923583404}
-  projectilePrefab: {fileID: 3943494420573376986, guid: d4e13fa1e12e36840b39d48ad6ee10a0, type: 3}
-  projectileSpeed: 2
-  explodeRadius: 0
-  explodeDamage: 0
-  primeRadius: 0
-  fuseTime: 0
-  bomberSpeedBoost: 0
-  dotZonePrefab: {fileID: 0}
-  dropInterval: 0
 --- !u!114 &-1143360811467118766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,7 +235,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
