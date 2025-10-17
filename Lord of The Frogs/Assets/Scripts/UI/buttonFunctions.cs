@@ -26,25 +26,22 @@ public class buttonFunctions : MonoBehaviour
 
     public void RestartGame()
     {
+        Time.timeScale = 1f;
 
-        GameObject oldPlayer = GameObject.FindGameObjectWithTag("Player");
-        if (oldPlayer != null)
+        if (gameManager.instance)
         {
-            Destroy(oldPlayer);
+            if (gameManager.instance != null)
+            {
+                gameManager.instance.UnpauseGame();
+            }
+            gameManager.instance.isPaused = false;
+            gameManager.instance.menuActive = null;
         }
 
-
-        if (gameManager.instance != null)
-        {
-            gameManager.instance.UnpauseGame();
-        }
-        else
-        {
-            Time.timeScale = 1f;
-        }
+        SceneManager.LoadScene("Large_Map_1");
 
         // 3. Reload the current scene
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void ReturnToMainMenu()
