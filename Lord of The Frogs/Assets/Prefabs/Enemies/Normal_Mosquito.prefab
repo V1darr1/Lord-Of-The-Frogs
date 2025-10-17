@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 7120707789540456423}
   - component: {fileID: 7154046542107812283}
   - component: {fileID: 5512153582219106653}
+  - component: {fileID: -7315370991164091069}
   m_Layer: 7
   m_Name: Normal_Mosquito
   m_TagString: Enemy
@@ -84,7 +85,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::health
   maxHP: 125
-  destroyOnDeath: 1
+  destroyOnDeath: 0
   healable: 0
   damageSoundClips:
   - {fileID: 8300000, guid: f4d2e42044c7ee441a178daa96d1f651, type: 3}
@@ -134,6 +135,20 @@ MonoBehaviour:
   playerMask:
     serializedVersion: 2
     m_Bits: 64
+  projectilePrefab: {fileID: 3943494420573376986, guid: d4e13fa1e12e36840b39d48ad6ee10a0, type: 3}
+  projectileSpeed: 3
+  projectileAttackRange: 6
+  muzzle: {fileID: 0}
+  explodeRadius: 1.2
+  explodeDamage: 3
+  useAnimationEvents: 1
+  attackMoveLock: 0.35
+  shootMoveLock: 0.25
+  attackStateFailSafe: 1
+  deathStateName: Die
+  deathLayerIndex: 0
+  fallbackDeathTime: 1
+  useUnscaledOnDeath: 1
 --- !u!114 &-1143360811467118766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -331,3 +346,25 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.7379557, y: 0.6589263}
   m_EdgeRadius: 0
+--- !u!95 &-7315370991164091069
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7844918009843045749}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 4a566012782a73747873486217e34b28, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
