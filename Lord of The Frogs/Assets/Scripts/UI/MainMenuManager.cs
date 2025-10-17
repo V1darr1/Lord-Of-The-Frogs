@@ -21,11 +21,14 @@ public class MainMenuManager : MonoBehaviour
 
     public void StartNewGame()
     {
-        // Set the static flag to prepare the game scene (BP-Dev) for normal start
-        gameManager.gameHasBooted = true;
-        gameManager.shouldOpenSettingsOnLoad = false;
+        Time.timeScale = 1f;
 
-        // Load the scene where the game starts
+        if (gameManager.instance)
+        {
+            gameManager.instance.isPaused = false;
+            gameManager.instance.menuActive = null;
+        }
+
         SceneManager.LoadScene("Large_Map_1");
     }
 
@@ -41,6 +44,13 @@ public class MainMenuManager : MonoBehaviour
         // Logic to close the Settings panel and return to the Main Menu view
         settingsMenuPanel.SetActive(false);
         mainMenuPanel.SetActive(true);
+    }
+
+    public void ReturnToMainMenu()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        SceneManager.LoadScene("Main Menu");
     }
 
     // --- DEBUG FEATURE: Showcase Level Access ---

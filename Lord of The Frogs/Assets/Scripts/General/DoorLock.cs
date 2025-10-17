@@ -12,14 +12,17 @@ public class DoorLock : MonoBehaviour
     public UnityEvent onLocked;
     public UnityEvent onUnlocked;
 
-    void Awake()
+    private void Reset()
     {
         if (!blocker) blocker = GetComponent<Collider2D>();
         if (!anim) anim = GetComponent<Animator>();
     }
 
-    void Start()
+    void Awake()
     {
+        if (!blocker) blocker = GetComponent<Collider2D>();
+        if (!anim) anim = GetComponent<Animator>();
+
         if (lockOnStart) Lock();
         else Unlock();
     }

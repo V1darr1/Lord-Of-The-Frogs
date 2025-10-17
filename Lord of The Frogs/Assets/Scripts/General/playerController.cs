@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class playerController : MonoBehaviour, IDamage
@@ -6,14 +7,13 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] float moveSpeed = 5f;
 
     [Header("Melee (mouse-aimed cone)")]
-    [SerializeField] float attackRange = 1.6f;     // radius of cone
-    [SerializeField] float attackArcDeg = 110f;    // cone width
+    [SerializeField] float attackRange = 1.6f;
+    [SerializeField] float attackArcDeg = 110f;
     [SerializeField] int attackDamage = 20;
-    [SerializeField] float knockback = 6f;
     [SerializeField] LayerMask enemyMask;
 
     [Header("Optional")]
-    [SerializeField] Transform attackOrigin;       // if null, uses player position
+    [SerializeField] Transform attackOrigin;
     [SerializeField] bool rotateAttackOrigin = true;
 
     [Header("Combo")]
@@ -21,28 +21,29 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] float comboResetTime = 0.7f;
     [SerializeField] float inputBufferTime = 0.35f;
     [SerializeField] float postEndGrace = 0.18f;
-    float lastClickTime = -999f;
-    float lastClickedEndTime = -999f;
 
     Rigidbody2D rb;
     Animator anim;
     health hp;
     Camera cam;
 
-    float attackTimer;
     bool facingRight = true;
     Vector2 moveDir;
-    Vector2 faceDir = Vector2.right;               // ALWAYS driven by mouse
+    Vector2 faceDir = Vector2.right;
 
     int comboStep = 0;
     bool isAttacking = false;
-    bool canQueueNext = false;
     bool queued = false;
     float comboTimer = 0f;
     float bufferTimer = 0f;
+    float lastClickTime = -999f;
+    float lastClickedEndTime = -999f;
 
     [SerializeField] private AudioClip[] AttackSoundClips;
     [SerializeField] private AudioClip[] DeathSoundClip;
+
+    // death gate
+    bool isDead = false;
 
     void Awake()
     {
@@ -51,35 +52,61 @@ public class playerController : MonoBehaviour, IDamage
         hp = GetComponent<health>();
         cam = Camera.main;
 
-        if (hp != null)
-            hp.onDeath += OnDeath;
+        if (hp) hp.onDeath += OnDeath;
+
+        // Do NOT mark dead in Awake; health init order can be late.
+        // Optional: keep normal update mode while alive
+        if (anim) anim.updateMode = AnimatorUpdateMode.Normal;
     }
 
+    void OnDisable()
+    {
+        if (hp) hp.onDeath -= OnDeath;
+    }
 
     void Update()
     {
-
-        if (gameManager.instance != null && gameManager.instance.isPaused)
+        // 1) If HP just hit zero and we haven't processed death yet, fire it NOW.
+        //    This ensures the anim trigger happens even if pause kicks in this frame.
+        if (!isDead && hp && !hp.isAlive)
         {
-            // Set velocity to zero to stop any lingering momentum
-            if (rb) rb.linearVelocity = Vector2.zero;
+            MarkDeadAndFreeze();
+            // fall through — we still want to skip controls below
+        }
+
+        // 2) Pause gate — BUT allow the death frame to pass through so the anim trigger can set.
+        if ((gameManager.instance != null && gameManager.instance.isPaused) && !isDead)
+        {
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = Vector2.zero;
+#else
+            rb.velocity = Vector2.zero;
+#endif
             return;
         }
 
+        // 3) If dead (or HP is 0 after the above), freeze controls/motion every frame.
+        if (isDead || (hp && !hp.isAlive))
+        {
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = Vector2.zero;
+#else
+            rb.velocity = Vector2.zero;
+#endif
+            moveDir = Vector2.zero;
+            isAttacking = false;
+            return;
+        }
 
+        // ---- Alive: normal loop ----
         UpdateAimFromMouse();
         HandleMove();
         HandleAttack();
         UpdateAnim();
 
         if (comboTimer > 0f) comboTimer -= Time.deltaTime;
-        if (bufferTimer > 0f)
-        {
-            bufferTimer -= Time.deltaTime;
-            if (bufferTimer <= 0f) canQueueNext = false;
-        }
-        if (!isAttacking && comboTimer <= 0f && comboStep > 0)
-            comboStep = 0;
+        if (bufferTimer > 0f) bufferTimer -= Time.deltaTime;
+        if (!isAttacking && comboTimer <= 0f && comboStep > 0) comboStep = 0;
     }
 
     // ---------- Mouse Aim ----------
@@ -89,14 +116,11 @@ public class playerController : MonoBehaviour, IDamage
         Vector3 m = cam.ScreenToWorldPoint(Input.mousePosition);
         Vector2 toMouse = (Vector2)m - (Vector2)transform.position;
 
-        if (toMouse.sqrMagnitude > 0.0001f)
-            faceDir = toMouse.normalized;
+        if (toMouse.sqrMagnitude > 0.0001f) faceDir = toMouse.normalized;
 
-        // Flip entire character so children & hitboxes follow
         if (faceDir.x > 0.02f && !facingRight) SetFacing(true);
         else if (faceDir.x < -0.02f && facingRight) SetFacing(false);
 
-        // rotate attack origin
         if (rotateAttackOrigin && attackOrigin)
         {
             float ang = Mathf.Atan2(faceDir.y, faceDir.x) * Mathf.Rad2Deg;
@@ -117,21 +141,28 @@ public class playerController : MonoBehaviour, IDamage
     {
         if (isAttacking)
         {
+#if UNITY_6000_0_OR_NEWER
             rb.linearVelocity = Vector2.zero;
+#else
+            rb.velocity = Vector2.zero;
+#endif
             return;
         }
 
         float hor = Input.GetAxisRaw("Horizontal");
         float ver = Input.GetAxisRaw("Vertical");
-
         moveDir = new Vector2(hor, ver).normalized;
+
+#if UNITY_6000_0_OR_NEWER
         rb.linearVelocity = moveDir * moveSpeed;
+#else
+        rb.velocity = moveDir * moveSpeed;
+#endif
     }
 
     // ---------- Attack / Combo ----------
     void HandleAttack()
     {
-        
         if (Input.GetMouseButtonDown(0))
         {
             lastClickTime = Time.time;
@@ -140,25 +171,18 @@ public class playerController : MonoBehaviour, IDamage
             if (!isAttacking)
             {
                 if (comboStep == 0 || Time.time - lastClickedEndTime <= postEndGrace)
-                {
                     comboStep = 1;
-                }
-
                 PlayComboStep(comboStep);
             }
-            else if (comboStep < maxCombo)
-            {
-                queued = true;
-            }
+            else if (comboStep < maxCombo) queued = true;
         }
     }
 
     void PlayComboStep(int step)
     {
-        isAttacking = true;
-        canQueueNext = false;
-        queued = false;
-        comboTimer = comboResetTime;
+        if (isDead || (hp && !hp.isAlive)) return;
+
+        isAttacking = true; queued = false; comboTimer = comboResetTime;
 
         switch (step)
         {
@@ -166,136 +190,128 @@ public class playerController : MonoBehaviour, IDamage
             case 2: anim.SetTrigger("Attack2"); break;
             case 3: anim.SetTrigger("Attack3"); break;
         }
-        SoundFXManager.instance.PlayRandomSoundFXClip(AttackSoundClips, transform, 1f);
+
+        if (SoundFXManager.instance)
+            SoundFXManager.instance.PlayRandomSoundFXClip(AttackSoundClips, transform, 1f);
     }
 
+    // Called from animation event
     public void Anim_Hit()
     {
+        if (isDead || (hp && !hp.isAlive)) return;
+
         Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
+        int mask = enemyMask.value == 0 ? ~0 : enemyMask.value;
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, attackRange, enemyMask.value == 0 ? ~0 : enemyMask.value);
-
+        Collider2D[] hits = Physics2D.OverlapCircleAll(origin, attackRange, mask);
         if (hits == null || hits.Length == 0) return;
 
         float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
+        bool isFinisher = (comboStep == 3);
 
+        var processed = new HashSet<GameObject>();
         foreach (var h in hits)
         {
             if (!h) continue;
-            Vector2 to = (Vector2)h.bounds.center - origin;
-            float mag = to.magnitude;
-            if (mag < 0.0001f) continue;
+            GameObject enemy = h.gameObject;
+            if (!processed.Add(enemy)) continue;
 
+            Vector2 to = (Vector2)h.bounds.center - origin;
+            float mag = to.magnitude; if (mag < 0.0001f) continue;
             Vector2 dir = to / mag;
-            if (Vector2.Dot(dir, faceDir) >= cosHalf)
-            {
-                float kb = (comboStep == 3) ? knockback : 0f;
-                DamageInvoker.ApplyHit(h.gameObject, attackDamage, origin, kb);
-            }
+            if (Vector2.Dot(dir, faceDir) < cosHalf) continue;
+
+            DamageInvoker.ApplyHit(enemy, attackDamage, origin, 0f);
+
+            var react = enemy.GetComponent<EnemyHitReact>();
+            if (!react) continue;
+
+            if (!isFinisher) react.ApplyStagger(0.25f);
+            else react.ApplyKnockbackFromPosition(origin);
         }
     }
 
-    public void Anim_QueueWindowOpen()
-    {
-        canQueueNext = true;
-        bufferTimer = inputBufferTime;
-    }
+    public void Anim_QueueWindowOpen() { bufferTimer = inputBufferTime; }
 
     public void Anim_AttackEnd()
     {
-        isAttacking = false;
-        lastClickedEndTime = Time.time;
+        if (isDead || (hp && !hp.isAlive)) { isAttacking = false; return; }
 
-        if (queued && comboStep < maxCombo)
-        {
-            comboStep++;
-            PlayComboStep(comboStep);
-            return;
-        }
+        isAttacking = false; lastClickedEndTime = Time.time;
+
+        if (queued && comboStep < maxCombo) { comboStep++; PlayComboStep(comboStep); return; }
         if (comboStep < maxCombo && Time.time - lastClickTime <= postEndGrace && comboTimer > 0f)
-        {
-            comboStep++;
-            PlayComboStep(comboStep);
-            return;
-        }
-        if (comboTimer > 0f || comboStep >= maxCombo)
-            comboStep = 0;
-    }
+        { comboStep++; PlayComboStep(comboStep); return; }
 
-    void AttackCone()
-    {
-        Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
-
-        // Collect by radius first, then filter by angle
-        Collider2D[] hits = Physics2D.OverlapCircleAll(
-            origin, attackRange,
-            enemyMask.value == 0 ? ~0 : enemyMask.value
-        );
-        if (hits == null || hits.Length == 0) return;
-
-        float cosHalf = Mathf.Cos(0.5f * attackArcDeg * Mathf.Deg2Rad);
-
-        foreach (var h in hits)
-        {
-            if (!h) continue;
-            Vector2 to = (Vector2)h.bounds.center - origin;
-            float mag = to.magnitude;
-            if (mag < 0.0001f) continue;
-
-            Vector2 dir = to / mag;
-            if (Vector2.Dot(dir, faceDir) >= cosHalf)
-            {
-                DamageInvoker.ApplyHit(h.gameObject, attackDamage, origin, knockback);
-            }
-        }
-    }
-
-    // ---------- Animation ----------
-    void UpdateAnim()
-    {
-        if (!anim) return;
-        anim.SetFloat("Movement X", moveDir.x);
-        anim.SetFloat("Movement Y", moveDir.y);
-        anim.SetFloat("Speed", rb.linearVelocity.sqrMagnitude);
+        if (comboTimer > 0f || comboStep >= maxCombo) comboStep = 0;
     }
 
     // ---------- Taking damage ----------
     public void ApplyDamage(int amount)
     {
+        if (isDead) return;
         if (hp) hp.ApplyDamage(amount);
     }
 
     void OnDeath()
     {
-        SoundFXManager.instance.PlayRandomSoundFXClip(DeathSoundClip, transform, 1f);
-        rb.linearVelocity = Vector2.zero;
-        moveDir = Vector2.zero;
+        if (isDead) return;
+        MarkDeadAndFreeze();
+    }
 
+    // ---------- Unified death path ----------
+    void MarkDeadAndFreeze()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        if (SoundFXManager.instance)
+            SoundFXManager.instance.PlayRandomSoundFXClip(DeathSoundClip, transform, 1f);
+
+#if UNITY_6000_0_OR_NEWER
+        rb.linearVelocity = Vector2.zero;
+#else
+        rb.velocity = Vector2.zero;
+#endif
+        moveDir = Vector2.zero;
         isAttacking = false;
 
-        anim.SetTrigger("Die");
+        // Ensure the death animation actually plays, even if the game pauses.
+        if (anim)
+        {
+            anim.updateMode = AnimatorUpdateMode.UnscaledTime; // play while paused
+            anim.SetBool("Die", true);                        // for controllers using a bool
+            anim.ResetTrigger("Attack1");
+            anim.ResetTrigger("Attack2");
+            anim.ResetTrigger("Attack3");
+            anim.SetTrigger("Die");                            // for controllers using a trigger
+        }
+        // keep the component enabled so Update keeps the body frozen
+    }
 
-        this.enabled = false;
+    // ---------- Anim params ----------
+    void UpdateAnim()
+    {
+        if (!anim) return;
+        anim.SetFloat("Movement X", moveDir.x);
+        anim.SetFloat("Movement Y", moveDir.y);
+#if UNITY_6000_0_OR_NEWER
+        anim.SetFloat("Speed", rb.linearVelocity.sqrMagnitude);
+#else
+        anim.SetFloat("Speed", rb.velocity.sqrMagnitude);
+#endif
     }
 
     // ---------- Gizmos ----------
     void OnDrawGizmosSelected()
     {
         Vector2 origin = attackOrigin ? (Vector2)attackOrigin.position : (Vector2)transform.position;
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(origin, attackRange);
+        Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(origin, attackRange);
 
         Vector2 f = faceDir.sqrMagnitude < 0.001f ? Vector2.right : faceDir.normalized;
         float half = 0.5f * attackArcDeg * Mathf.Deg2Rad;
-
-        Vector2 left = new Vector2(
-            f.x * Mathf.Cos(half) - f.y * Mathf.Sin(half),
-            f.x * Mathf.Sin(half) + f.y * Mathf.Cos(half)
-        );
-        Vector2 right = new Vector2(
-            f.x * Mathf.Cos(-half) - f.y * Mathf.Sin(-half),
-            f.x * Mathf.Sin(-half) + f.y * Mathf.Cos(-half)
-        );
+        Vector2 left = new Vector2(f.x * Mathf.Cos(half) - f.y * Mathf.Sin(half), f.x * Mathf.Sin(half) + f.y * Mathf.Cos(half));
+        Vector2 right = new Vector2(f.x * Mathf.Cos(-half) - f.y * Mathf.Sin(-half), f.x * Mathf.Sin(-half) + f.y * Mathf.Cos(-half));
         Gizmos.DrawLine(origin, origin + left * attackRange);
         Gizmos.DrawLine(origin, origin + right * attackRange);
     }

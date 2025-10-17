@@ -2,5 +2,5 @@ using UnityEngine;
 
 public class PlayerSpawnPoint : MonoBehaviour
 {
-    public string spawnId = "G1";
+    public string id = "default";
 }
