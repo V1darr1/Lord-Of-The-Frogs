@@ -26,22 +26,25 @@ public class buttonFunctions : MonoBehaviour
 
     public void RestartGame()
     {
-        Time.timeScale = 1f;
-
-        if (gameManager.instance)
+        // 1. Find and Reset the Player's State using the modern function.
+        // We use the Type name (playerController) to find the single persistent instance.
+        playerController player = GameObject.FindFirstObjectByType<playerController>();
+        if (player != null)
         {
-            if (gameManager.instance != null)
-            {
-                gameManager.instance.UnpauseGame();
-            }
-            gameManager.instance.isPaused = false;
-            gameManager.instance.menuActive = null;
+            player.ResetStateForNewGame();
         }
 
-        SceneManager.LoadScene("Large_Map_1");
+        // 2. Ensure Time is running for the transition.
+        Time.timeScale = 1f;
 
-        // 3. Reload the current scene
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        // 3. Unpause the GameManager state.
+        if (gameManager.instance != null)
+        {
+            gameManager.instance.UnpauseGame();
+        }
+
+        // 4. Reload the current scene.
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void ReturnToMainMenu()
