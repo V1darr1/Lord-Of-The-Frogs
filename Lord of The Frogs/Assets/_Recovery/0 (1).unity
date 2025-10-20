@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!4 &436854759 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3238712336522657961, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
+  m_PrefabInstance: {fileID: 1516746129}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &587623205
 GameObject:
   m_ObjectHideFlags: 0
@@ -163,28 +168,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c2517a6eee150b46938722fe29a6af7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OptionsManager
---- !u!1 &711626714 stripped
+--- !u!1 &754247151
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 3548610624177682667, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
-  m_PrefabInstance: {fileID: 1516746129}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &711626719
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 754247153}
+  - component: {fileID: 754247152}
+  m_Layer: 0
+  m_Name: FullScreenEffectController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &754247152
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 711626714}
+  m_GameObject: {fileID: 754247151}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1608b9391de37cf479d99853a9d023e2, type: 3}
+  m_Script: {fileID: 11500000, guid: 05b2dae799e3e8f4ca3f7a0ab7126a3a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HurtFlashOnMainCamera
-  material: {fileID: 2100000, guid: 74afbd25977fd864184aada8039560be, type: 2}
-  holdTime: 0.15
-  fadeTime: 0.35
-  startVignette: 1.25
-  startVoronoi: 1.25
+  m_EditorClassIdentifier: Assembly-CSharp::FullScreenTestController
+  _hurtDisplayTime: 1.5
+  _hurtFadeOutTime: 0.5
+  _fullScreenDamage: {fileID: 7190725917943422617, guid: c3de4c4b0dd727e408dcf71eb910b7a7, type: 2}
+  _material: {fileID: 2100000, guid: 74afbd25977fd864184aada8039560be, type: 2}
+--- !u!4 &754247153
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 754247151}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 5.9081397, y: -8.661289, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 436854759}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1311707692
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -360,10 +391,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 1835186801699201432, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
-      propertyPath: m_RendererIndex
-      value: -1
-      objectReference: {fileID: 0}
     - target: {fileID: 3238712336522657961, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.4794
@@ -414,33 +441,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 266519665739511368, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
-      insertIndex: 2
-      addedObject: {fileID: 1516746131}
-    - targetCorrespondingSourceObject: {fileID: 3548610624177682667, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3238712336522657961, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 711626719}
+      addedObject: {fileID: 754247153}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
---- !u!1 &1516746130 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 266519665739511368, guid: fac30e6f433a7f848a4cd5330f23d1ac, type: 3}
-  m_PrefabInstance: {fileID: 1516746129}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1516746131
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1516746130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27b482aeafb35d3429b02c8e8921ab1d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HurtFlashOnDamage
-  cameraFlash: {fileID: 711626719}
 --- !u!114 &1977969868 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 9138439369024205761, guid: 9bb3aaa062815be48ae7094d0e733184, type: 3}

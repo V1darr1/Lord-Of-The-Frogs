@@ -31,6 +31,11 @@ public class health : MonoBehaviour, IDamage
         _hp -= amount;
         if (_hp <= 0f) { _hp = 0f; Die(); }
 
+        SendMessage("Hit", amount, SendMessageOptions.DontRequireReceiver);
+
+
+
+        
         //play sound FX 
 
         //SoundFXManager.instance.PlaySoundFXClip(damageSoundClip, transform, 1f);
