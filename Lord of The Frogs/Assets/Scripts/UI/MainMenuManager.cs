@@ -21,14 +21,14 @@ public class MainMenuManager : MonoBehaviour
 
     public void StartNewGame()
     {
+
+        gameManager.gameHasBooted = true; // Tell the game it's past the main menu
+        gameManager.shouldOpenSettingsOnLoad = false;
+
+        // Ensure Time is running for the scene transition
         Time.timeScale = 1f;
 
-        if (gameManager.instance)
-        {
-            gameManager.instance.isPaused = false;
-            gameManager.instance.menuActive = null;
-        }
-
+        // Load the final game scene directly
         SceneManager.LoadScene("Large_Map_1");
     }
 

@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
 
 public class playerController : MonoBehaviour, IDamage
 {
@@ -42,40 +44,94 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] private AudioClip[] AttackSoundClips;
     [SerializeField] private AudioClip[] DeathSoundClip;
 
-    // death gate
+    // --- State and Persistence ---
     bool isDead = false;
+    public static playerController Instance;
+
 
     void Awake()
     {
+
+        if (Instance == null)
+        {
+            Instance = this;
+            // Keep player alive between scenes
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            // Destroy the new instance if one already exists
+            Destroy(gameObject);
+        }
+        // -------------------------
+
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         hp = GetComponent<health>();
         cam = Camera.main;
 
-        if (hp) hp.onDeath += OnDeath;
-
-        // Do NOT mark dead in Awake; health init order can be late.
-        // Optional: keep normal update mode while alive
-        if (anim) anim.updateMode = AnimatorUpdateMode.Normal;
+        if (hp)
+        {
+            hp.onDeath += OnDeath;
+        }
     }
 
-    void OnDisable()
+
+    private void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
+    private void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
+
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (hp) hp.onDeath -= OnDeath;
+        if (scene.name != "Main Menu")
+        {
+            // Reset the entire Animator state first
+            if (anim)
+            {
+                anim.Rebind(); // Clears all internal state data
+                anim.Update(0f); // Forces an immediate update
+            }
+
+            ResetStateForNewGame();
+        }
     }
+
+
+    public void ResetStateForNewGame()
+    {
+        // 1. Reset all state flags
+        isDead = false;
+        enabled = true;
+
+        // 2. Clear Rigidbody velocity
+        if (rb)
+        {
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = Vector2.zero;
+#else
+        rb.velocity = Vector2.zero;
+#endif
+        }
+
+        // 🛑 CRITICAL FIX: Reset the Animator and Health 🛑
+        if (anim)
+        {
+            anim.SetBool("IsDead", false); // Assuming you use a bool for the dead state
+            anim.SetTrigger("Respawn");    // Trigger transition back to Idle/Run
+        }
+
+        // 4. Heal the player to full HP (This MUST happen to clear the death state)
+        if (hp)
+        {
+            hp.Heal(hp.MaxHP);
+        }
+    }
+
 
     void Update()
     {
-        // 1) If HP just hit zero and we haven't processed death yet, fire it NOW.
-        //    This ensures the anim trigger happens even if pause kicks in this frame.
-        if (!isDead && hp && !hp.isAlive)
-        {
-            MarkDeadAndFreeze();
-            // fall through — we still want to skip controls below
-        }
-
-        // 2) Pause gate — BUT allow the death frame to pass through so the anim trigger can set.
-        if ((gameManager.instance != null && gameManager.instance.isPaused) && !isDead)
+        // Pause gate
+        if (gameManager.instance != null && gameManager.instance.isPaused)
         {
 #if UNITY_6000_0_OR_NEWER
             rb.linearVelocity = Vector2.zero;
@@ -85,9 +141,10 @@ public class playerController : MonoBehaviour, IDamage
             return;
         }
 
-        // 3) If dead (or HP is 0 after the above), freeze controls/motion every frame.
+        // --- health gate ---
         if (isDead || (hp && !hp.isAlive))
         {
+            // Keep frozen every frame so nothing else can nudge us
 #if UNITY_6000_0_OR_NEWER
             rb.linearVelocity = Vector2.zero;
 #else
@@ -98,7 +155,6 @@ public class playerController : MonoBehaviour, IDamage
             return;
         }
 
-        // ---- Alive: normal loop ----
         UpdateAimFromMouse();
         HandleMove();
         HandleAttack();
@@ -192,10 +248,10 @@ public class playerController : MonoBehaviour, IDamage
         }
 
         if (SoundFXManager.instance)
+            // Assuming AttackSoundClips is correctly assigned
             SoundFXManager.instance.PlayRandomSoundFXClip(AttackSoundClips, transform, 1f);
     }
 
-    // Called from animation event
     public void Anim_Hit()
     {
         if (isDead || (hp && !hp.isAlive)) return;
@@ -210,6 +266,7 @@ public class playerController : MonoBehaviour, IDamage
         bool isFinisher = (comboStep == 3);
 
         var processed = new HashSet<GameObject>();
+
         foreach (var h in hits)
         {
             if (!h) continue;
@@ -221,13 +278,7 @@ public class playerController : MonoBehaviour, IDamage
             Vector2 dir = to / mag;
             if (Vector2.Dot(dir, faceDir) < cosHalf) continue;
 
-            DamageInvoker.ApplyHit(enemy, attackDamage, origin, 0f);
 
-            var react = enemy.GetComponent<EnemyHitReact>();
-            if (!react) continue;
-
-            if (!isFinisher) react.ApplyStagger(0.25f);
-            else react.ApplyKnockbackFromPosition(origin);
         }
     }
 
@@ -268,25 +319,29 @@ public class playerController : MonoBehaviour, IDamage
         if (SoundFXManager.instance)
             SoundFXManager.instance.PlayRandomSoundFXClip(DeathSoundClip, transform, 1f);
 
+        // Keep velocity frozen
 #if UNITY_6000_0_OR_NEWER
         rb.linearVelocity = Vector2.zero;
 #else
-        rb.velocity = Vector2.zero;
+    rb.velocity = Vector2.zero;
 #endif
         moveDir = Vector2.zero;
         isAttacking = false;
 
-        // Ensure the death animation actually plays, even if the game pauses.
+        // Ensure the death animation plays
         if (anim)
         {
-            anim.updateMode = AnimatorUpdateMode.UnscaledTime; // play while paused
-            anim.SetBool("Die", true);                        // for controllers using a bool
+
+            anim.SetBool("Die", true);
+            anim.SetTrigger("Die");
+
             anim.ResetTrigger("Attack1");
             anim.ResetTrigger("Attack2");
             anim.ResetTrigger("Attack3");
-            anim.SetTrigger("Die");                            // for controllers using a trigger
+
+            // Final death trigger
+
         }
-        // keep the component enabled so Update keeps the body frozen
     }
 
     // ---------- Anim params ----------

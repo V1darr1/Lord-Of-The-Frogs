@@ -56,24 +56,37 @@ public class gameManager : MonoBehaviour
 
     private void Start()
     {
+
         if (!gameHasBooted)
         {
             gameHasBooted = true;
-            SceneManager.LoadScene("Main Menu");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Main Menu");
             return;
         }
 
+
+
+        // Reset state for gameplay
         isPaused = false;
         Time.timeScale = 1f;
-        timeScaleOrig = Time.timeScale;
+
+
+
 
         if (shouldOpenSettingsOnLoad)
         {
             shouldOpenSettingsOnLoad = false;
             OpenSettingsMenu();
         }
-    }
+        else
+        {
+            // Normal game start logic
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
 
+
+    }
     // ---------- Scene Loaded ----------
     private void OnSceneLoaded(Scene s, LoadSceneMode mode)
     {
