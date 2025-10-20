@@ -1317,7 +1317,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScenePortal
   sceneToLoad: Large_Map_1
-  spawnId: default
+  spawnId: LM1
   enterCooldown: 0.1
 --- !u!1 &1766659202
 GameObject:
