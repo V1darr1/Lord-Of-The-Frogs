@@ -11,7 +11,7 @@ public class MainMenuManager : MonoBehaviour
     private void Start()
     {
 
-
+        Time.timeScale = 1f;
 
         mainMenuPanel.SetActive(true);
         settingsMenuPanel.SetActive(false);
