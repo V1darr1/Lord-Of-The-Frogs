@@ -138,7 +138,7 @@ MonoBehaviour:
   projectilePrefab: {fileID: 0}
   projectileSpeed: 10
   projectileAttackRange: 6
-  muzzle: {fileID: 0}
+  muzzle: {fileID: 1231985058024926521}
   explodeRadius: 1.2
   explodeDamage: 3
   useAnimationEvents: 1
@@ -149,6 +149,7 @@ MonoBehaviour:
   deathLayerIndex: 0
   fallbackDeathTime: 1
   useUnscaledOnDeath: 1
+  corpseLayerName: Corpse
 --- !u!114 &3475886256292751620
 MonoBehaviour:
   m_ObjectHideFlags: 0

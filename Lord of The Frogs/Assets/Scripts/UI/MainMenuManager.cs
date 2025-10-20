@@ -29,6 +29,7 @@ public class MainMenuManager : MonoBehaviour
             gameManager.instance.menuActive = null;
         }
 
+        GateFlags.PlayLargeMapIntroGate = true;
         SceneManager.LoadScene("Large_Map_1");
     }
 
