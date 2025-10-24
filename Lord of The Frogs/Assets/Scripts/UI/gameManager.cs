@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -56,6 +57,7 @@ public class gameManager : MonoBehaviour
 
     private void Start()
     {
+        //  load Main Menu and return.
         if (!gameHasBooted)
         {
             gameHasBooted = true;
@@ -63,17 +65,49 @@ public class gameManager : MonoBehaviour
             return;
         }
 
+
+
+        // 1. Reset Time and Pause State 
         isPaused = false;
         Time.timeScale = 1f;
-        timeScaleOrig = Time.timeScale;
+        menuActive = null;
+        health.TotalEnemiesInLevel = 0; // Reset enemy counter
+        StartCoroutine(AggressiveMenuCleanup());
+
+        if (menuPause) menuPause.SetActive(false);
+        if (menuWin) menuWin.SetActive(false);
+        if (menuLose) menuLose.SetActive(false);
+        if (settingsMenu) settingsMenu.SetActive(false);
+        menuActive = null;
+
+
 
         if (shouldOpenSettingsOnLoad)
         {
             shouldOpenSettingsOnLoad = false;
+
             OpenSettingsMenu();
         }
-    }
+        else
+        {
 
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+
+    }
+    private IEnumerator AggressiveMenuCleanup()
+    {
+        // Wait until the end of the first frame (when all objects are guaranteed to be initialized)
+        yield return null;
+
+        // Now execute the aggressive cleanup:
+        if (menuPause) menuPause.SetActive(false);
+        if (menuWin) menuWin.SetActive(false);
+        if (menuLose) menuLose.SetActive(false);
+        if (settingsMenu) settingsMenu.SetActive(false);
+        menuActive = null;
+    }
     // ---------- Scene Loaded ----------
     private void OnSceneLoaded(Scene s, LoadSceneMode mode)
     {
@@ -245,9 +279,17 @@ public class gameManager : MonoBehaviour
     public void ReturnToMainMenu()
     {
         gameHasBooted = false;
+        isPaused = false;
+        menuActive = null;
+
+
+        Time.timeScale = 1f;
+
+        // Set cursor state for the Main Menu scene
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-        Time.timeScale = 1f;
+
+        // Load the final destination scene
         SceneManager.LoadScene("Main Menu");
     }
 }
