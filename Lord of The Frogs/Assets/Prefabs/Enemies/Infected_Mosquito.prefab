@@ -128,7 +128,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   type: 2
-  damage: 40
+  damage: 1
   attackRange: 0.5
   attackCooldown: 1
   hitOrigin: {fileID: 1239271053836003210}

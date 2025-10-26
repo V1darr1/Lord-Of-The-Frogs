@@ -349,14 +349,11 @@ public class playerController : MonoBehaviour, IDamage
         // Heal to full if your health exposes MaxHP / Heal
         if (hp)
         {
-            // Prefer a direct API if you have it
             hp.SendMessage("FullHeal", SendMessageOptions.DontRequireReceiver);
             hp.SendMessage("HealToFull", SendMessageOptions.DontRequireReceiver);
             hp.SendMessage("Revive", SendMessageOptions.DontRequireReceiver);
             hp.SendMessage("ReviveToFull", SendMessageOptions.DontRequireReceiver);
-
-            // Fallback: if you have Heal(int) and MaxHP:
-            // hp.Heal(hp.MaxHP);
+            hp.Heal(hp.MaxHP);
         }
 
         enabled = true;
@@ -429,7 +426,7 @@ public class playerController : MonoBehaviour, IDamage
             hp.SendMessage("Revive", SendMessageOptions.DontRequireReceiver);
             hp.SendMessage("ReviveToFull", SendMessageOptions.DontRequireReceiver);
             // fallback if you have Heal(int) & MaxHP
-            // hp.Heal(hp.MaxHP);
+            hp.Heal(hp.MaxHP);
         }
 
         // 5) Ensure colliders re-enabled (if death disabled them)
