@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class playerController : MonoBehaviour, IDamage
 {
@@ -22,15 +23,28 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] float inputBufferTime = 0.35f;
     [SerializeField] float postEndGrace = 0.18f;
 
+    [Header("Audio")]
+    [SerializeField] AudioClip[] AttackSoundClips;
+    [SerializeField] AudioClip[] DeathSoundClip;
+
+    [Header("Persistence")]
+    [Tooltip("If true, a single Player persists across scenes. Extra instances auto-destroy.")]
+    [SerializeField] bool persistAcrossScenes = true;
+    [Tooltip("If true, this script revives the player automatically on scene load (except Main Menu).")]
+    [SerializeField] bool autoReviveOnSceneLoad = true;
+
+    // --- Components ---
     Rigidbody2D rb;
     Animator anim;
     health hp;
     Camera cam;
 
+    // --- Facing / Move state ---
     bool facingRight = true;
     Vector2 moveDir;
     Vector2 faceDir = Vector2.right;
 
+    // --- Combo state ---
     int comboStep = 0;
     bool isAttacking = false;
     bool queued = false;
@@ -39,14 +53,22 @@ public class playerController : MonoBehaviour, IDamage
     float lastClickTime = -999f;
     float lastClickedEndTime = -999f;
 
-    [SerializeField] private AudioClip[] AttackSoundClips;
-    [SerializeField] private AudioClip[] DeathSoundClip;
-
-    // death gate
+    // --- Death gate ---
     bool isDead = false;
 
+    // --- Singleton (optional) ---
+    public static playerController Instance;
+
+    // ---------- Lifecycle ----------
     void Awake()
     {
+        // Optional singleton/persistence
+        if (persistAcrossScenes)
+        {
+            if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); }
+            else if (Instance != this) { Destroy(gameObject); return; }
+        }
+
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         hp = GetComponent<health>();
@@ -54,27 +76,37 @@ public class playerController : MonoBehaviour, IDamage
 
         if (hp) hp.onDeath += OnDeath;
 
-        // Do NOT mark dead in Awake; health init order can be late.
-        // Optional: keep normal update mode while alive
+        // Use Normal update while alive
         if (anim) anim.updateMode = AnimatorUpdateMode.Normal;
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void OnDisable()
     {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
         if (hp) hp.onDeath -= OnDeath;
     }
 
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (!autoReviveOnSceneLoad) return;
+        if (scene.name == "Main Menu") return;
+        // Rebind animator to clear any sub-state garbage, then revive to full control.
+        if (anim) { anim.Rebind(); anim.Update(0f); }
+        ForceReviveForRestart();
+    }
+
+    // ---------- Update ----------
     void Update()
     {
-        // 1) If HP just hit zero and we haven't processed death yet, fire it NOW.
-        //    This ensures the anim trigger happens even if pause kicks in this frame.
-        if (!isDead && hp && !hp.isAlive)
-        {
-            MarkDeadAndFreeze();
-            // fall through — we still want to skip controls below
-        }
+        // If HP just hit 0 and we haven't processed death yet, process now
+        if (!isDead && hp && !hp.isAlive) MarkDeadAndFreeze();
 
-        // 2) Pause gate — BUT allow the death frame to pass through so the anim trigger can set.
+        // Pause gate (but allow the death frame to go through above)
         if ((gameManager.instance != null && gameManager.instance.isPaused) && !isDead)
         {
 #if UNITY_6000_0_OR_NEWER
@@ -85,7 +117,7 @@ public class playerController : MonoBehaviour, IDamage
             return;
         }
 
-        // 3) If dead (or HP is 0 after the above), freeze controls/motion every frame.
+        // Dead = hard freeze
         if (isDead || (hp && !hp.isAlive))
         {
 #if UNITY_6000_0_OR_NEWER
@@ -98,7 +130,7 @@ public class playerController : MonoBehaviour, IDamage
             return;
         }
 
-        // ---- Alive: normal loop ----
+        // Alive loop
         UpdateAimFromMouse();
         HandleMove();
         HandleAttack();
@@ -221,13 +253,14 @@ public class playerController : MonoBehaviour, IDamage
             Vector2 dir = to / mag;
             if (Vector2.Dot(dir, faceDir) < cosHalf) continue;
 
+            // Damage + reaction
             DamageInvoker.ApplyHit(enemy, attackDamage, origin, 0f);
-
             var react = enemy.GetComponent<EnemyHitReact>();
-            if (!react) continue;
-
-            if (!isFinisher) react.ApplyStagger(0.25f);
-            else react.ApplyKnockbackFromPosition(origin);
+            if (react)
+            {
+                if (!isFinisher) react.ApplyStagger(0.25f);
+                else react.ApplyKnockbackFromPosition(origin);
+            }
         }
     }
 
@@ -276,17 +309,61 @@ public class playerController : MonoBehaviour, IDamage
         moveDir = Vector2.zero;
         isAttacking = false;
 
-        // Ensure the death animation actually plays, even if the game pauses.
         if (anim)
         {
-            anim.updateMode = AnimatorUpdateMode.UnscaledTime; // play while paused
-            anim.SetBool("Die", true);                        // for controllers using a bool
+            // Ensure death anim plays even if the game is paused this frame
+            anim.updateMode = AnimatorUpdateMode.UnscaledTime;
+            anim.SetBool("Die", true);       // if controller uses a bool
             anim.ResetTrigger("Attack1");
             anim.ResetTrigger("Attack2");
             anim.ResetTrigger("Attack3");
-            anim.SetTrigger("Die");                            // for controllers using a trigger
+            anim.SetTrigger("Die");          // if controller uses a trigger
         }
-        // keep the component enabled so Update keeps the body frozen
+        // Keep enabled so Update continues to freeze motion.
+    }
+
+    // ---------- Revival API (for restarts / scene loads) ----------
+    public void ForceReviveForRestart()
+    {
+        isDead = false;
+        isAttacking = false;
+        moveDir = Vector2.zero;
+
+#if UNITY_6000_0_OR_NEWER
+        if (rb) rb.linearVelocity = Vector2.zero;
+#else
+        if (rb) rb.velocity = Vector2.zero;
+#endif
+        if (rb) rb.angularVelocity = 0f;
+
+        if (anim)
+        {
+            anim.updateMode = AnimatorUpdateMode.Normal;
+            anim.ResetTrigger("Die");
+            anim.SetBool("Die", false);
+            anim.ResetTrigger("Attack1");
+            anim.ResetTrigger("Attack2");
+            anim.ResetTrigger("Attack3");
+        }
+
+        // Heal to full if your health exposes MaxHP / Heal
+        if (hp)
+        {
+            // Prefer a direct API if you have it
+            hp.SendMessage("FullHeal", SendMessageOptions.DontRequireReceiver);
+            hp.SendMessage("HealToFull", SendMessageOptions.DontRequireReceiver);
+            hp.SendMessage("Revive", SendMessageOptions.DontRequireReceiver);
+            hp.SendMessage("ReviveToFull", SendMessageOptions.DontRequireReceiver);
+
+            // Fallback: if you have Heal(int) and MaxHP:
+            // hp.Heal(hp.MaxHP);
+        }
+
+        enabled = true;
+
+        // In case any colliders were disabled on death
+        var cols = GetComponentsInChildren<Collider2D>(includeInactive: false);
+        foreach (var c in cols) if (c && !c.enabled) c.enabled = true;
     }
 
     // ---------- Anim params ----------
@@ -300,6 +377,64 @@ public class playerController : MonoBehaviour, IDamage
 #else
         anim.SetFloat("Speed", rb.velocity.sqrMagnitude);
 #endif
+    }
+
+    public void ResetStateForNewGame()
+    {
+        // Make sure we have refs (covers domain reloads)
+        if (!rb) rb = GetComponent<Rigidbody2D>();
+        if (!anim) anim = GetComponent<Animator>();
+        if (!hp) hp = GetComponent<health>();
+
+        // 1) Clear internal state
+        isDead = false;
+        isAttacking = false;
+        queued = false;
+        comboStep = 0;
+        comboTimer = 0f;
+        bufferTimer = 0f;
+        moveDir = Vector2.zero;
+        faceDir = Vector2.right;
+        enabled = true;
+
+        // 2) Zero physics
+#if UNITY_6000_0_OR_NEWER
+        if (rb) rb.linearVelocity = Vector2.zero;
+#else
+    if (rb) rb.velocity = Vector2.zero;
+#endif
+        if (rb) rb.angularVelocity = 0f;
+
+        // 3) Reset animator cleanly
+        if (anim)
+        {
+            anim.updateMode = AnimatorUpdateMode.Normal; // back to normal time
+            anim.Rebind();            // wipe cached state
+            anim.Update(0f);          // force immediate eval
+
+            // clear death/attack params used by our controller
+            anim.ResetTrigger("Die");
+            anim.SetBool("Die", false);
+            anim.ResetTrigger("Attack1");
+            anim.ResetTrigger("Attack2");
+            anim.ResetTrigger("Attack3");
+        }
+
+        // 4) Restore health to full (use whatever your health exposes)
+        if (hp)
+        {
+            // prefer concrete API if present
+            hp.SendMessage("FullHeal", SendMessageOptions.DontRequireReceiver);
+            hp.SendMessage("HealToFull", SendMessageOptions.DontRequireReceiver);
+            hp.SendMessage("Revive", SendMessageOptions.DontRequireReceiver);
+            hp.SendMessage("ReviveToFull", SendMessageOptions.DontRequireReceiver);
+            // fallback if you have Heal(int) & MaxHP
+            // hp.Heal(hp.MaxHP);
+        }
+
+        // 5) Ensure colliders re-enabled (if death disabled them)
+        var cols = GetComponentsInChildren<Collider2D>(includeInactive: false);
+        foreach (var c in cols) if (c && !c.enabled) c.enabled = true;
     }
 
     // ---------- Gizmos ----------

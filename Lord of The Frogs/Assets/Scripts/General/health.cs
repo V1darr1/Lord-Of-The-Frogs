@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class health : MonoBehaviour, IDamage
@@ -31,6 +32,11 @@ public class health : MonoBehaviour, IDamage
         _hp -= amount;
         if (_hp <= 0f) { _hp = 0f; Die(); }
 
+        SendMessage("Hit", amount, SendMessageOptions.DontRequireReceiver);
+
+
+
+        
         //play sound FX 
 
         //SoundFXManager.instance.PlaySoundFXClip(damageSoundClip, transform, 1f);
@@ -43,16 +49,42 @@ public class health : MonoBehaviour, IDamage
 
     public void Heal(float amount)
     {
-        if (!healable || !isAlive) return;
+        //  Allow healing even if not alive, specifically for respawn logic.
+        if (!healable) return;
+
+        // Calculate new HP, capping it at MaxHP.
         _hp = Mathf.Min(maxHP, _hp + amount);
+
+
+        if (_hp > 0f)
+        {
+
+        }
     }
 
     private void Die()
     {
-        onDeath?.Invoke();
-        if (triggersWinOnDeath && gameManager.instance)
-            gameManager.instance.OpenWinMenu();
+        if (gameObject.CompareTag("Player") && gameManager.instance)
+        {
+            // Start the delayed routine for the death animation
+            StartCoroutine(OpenLoseMenuAfterDelay(1.5f)); // Wait 1.5 seconds for animation
+        }
+        // ... (Win condition logic remains) ...
 
+        onDeath?.Invoke();
         if (destroyOnDeath) Destroy(gameObject);
+    }
+
+    // Coroutine to wait and then pause the game
+    private IEnumerator OpenLoseMenuAfterDelay(float delay)
+    {
+        // Wait for the duration of the death animation (Time.timeScale is still 1.0)
+        yield return new WaitForSeconds(delay);
+
+        // Now freeze the game and show the menu
+        if (gameManager.instance != null)
+        {
+            gameManager.instance.OpenLoseMenu();
+        }
     }
 }

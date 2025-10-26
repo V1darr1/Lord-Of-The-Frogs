@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3238712336522657961}
   - component: {fileID: 8776820805252893698}
+  - component: {fileID: 1726763809864857870}
   - component: {fileID: 2614528581860896075}
   - component: {fileID: 8010098765761678759}
   - component: {fileID: 5232386320083338735}
@@ -62,6 +63,24 @@ MonoBehaviour:
   healable: 1
   damageSoundClips: []
   triggersWinOnDeath: 0
+--- !u!114 &1726763809864857870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266519665739511368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 504f5bd2e164f564db0f3e7818da26dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::playerFlask
+  maxFlasks: 3
+  healAmount: 50
+  healKey: 114
+  healCooldown: 15
+  flaskText: {fileID: 0}
+  healSound: {fileID: 0}
 --- !u!114 &2614528581860896075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -92,7 +111,6 @@ MonoBehaviour:
   attackRange: 0.43
   attackArcDeg: 150
   attackDamage: 25
-  knockback: 0
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
@@ -108,6 +126,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 5d39c14ffd62183408af5ba32c83f417, type: 3}
   DeathSoundClip:
   - {fileID: 8300000, guid: c456121e479beb244be123229fc12f89, type: 3}
+  persistAcrossScenes: 1
+  autoReviveOnSceneLoad: 1
 --- !u!114 &5232386320083338735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,7 +209,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 356783991
-  m_SortingLayer: 1
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: cdfbf8b4012b41840a03093770207c5f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -474,7 +494,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 2.5
+  orthographic size: 3.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

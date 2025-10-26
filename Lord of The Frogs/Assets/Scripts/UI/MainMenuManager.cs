@@ -5,22 +5,31 @@ public class MainMenuManager : MonoBehaviour
 {
     // Assign these panels in the Inspector of the Main Menu scene
     [SerializeField] private GameObject mainMenuPanel;
+    [SerializeField] private GameObject creditsPanel;
     [SerializeField] private GameObject settingsMenuPanel;
 
     private void Start()
     {
-        // Plays music when the scene loads (assuming MusicManager is set up correctly)
-        //MusicManager.Instance.PlayMusic("MainMenu");
 
-        Time.timeScale = 0f;
+        Time.timeScale = 1f;
 
-        // Ensure initial panel states are correct
         mainMenuPanel.SetActive(true);
         settingsMenuPanel.SetActive(false);
+
+
+        if (creditsPanel != null)
+        {
+            creditsPanel.SetActive(false);
+        }
     }
 
     public void StartNewGame()
     {
+
+        gameManager.gameHasBooted = true; // Tell the game it's past the main menu
+        gameManager.shouldOpenSettingsOnLoad = false;
+
+        // Ensure Time is running for the scene transition
         Time.timeScale = 1f;
 
         if (gameManager.instance)
@@ -29,7 +38,22 @@ public class MainMenuManager : MonoBehaviour
             gameManager.instance.menuActive = null;
         }
 
+        GateFlags.PlayLargeMapIntroGate = true;
         SceneManager.LoadScene("Large_Map_1");
+    }
+    public void OpenCredits()
+    {
+        // Hide the main panel and show the credits panel
+        mainMenuPanel.SetActive(false);
+        settingsMenuPanel.SetActive(false); // Ensure settings is also hidden
+        creditsPanel.SetActive(true);
+    }
+
+    public void CloseCredits()
+    {
+        // Hide the credits panel and show the main panel
+        creditsPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
     }
 
     public void openSettingsMenu()
