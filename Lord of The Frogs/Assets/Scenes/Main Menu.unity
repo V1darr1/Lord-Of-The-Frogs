@@ -1046,12 +1046,14 @@ MonoBehaviour:
 
     Animation - Mason Wimbish
 
+    Level Tilemaps - Cainos
+
 
     Sound
 
 
-    Menu and
-    Game Music - Justin Rosario
+    Menu
+    and Game Music - Justin Rosario
 
     SFX - Justin Rosario
 
@@ -1059,8 +1061,8 @@ MonoBehaviour:
     UI
 
 
-    Menu Art
-    - Bryce Powell
+    Menu
+    Art - Bryce Powell
 
 
 
@@ -3236,7 +3238,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Credits
 
-    Prowess Gaming'
+    Prowess Studios'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
