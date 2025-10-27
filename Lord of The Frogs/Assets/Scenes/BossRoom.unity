@@ -804,7 +804,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 044da8e0eb98b44478209c090cc72bd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraZoomTrigger
-  targetZoom: 45
+  targetZoom: 30
   zoomSpeed: 2
   exitDelay: 99999
 --- !u!1 &1256548546
