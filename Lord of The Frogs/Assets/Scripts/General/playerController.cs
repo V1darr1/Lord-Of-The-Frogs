@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class playerController : MonoBehaviour, IDamage
 {
+    private bool inputEnabled = true;
     [Header("Move")]
     [SerializeField] float moveSpeed = 5f;
 
@@ -99,31 +100,59 @@ public class playerController : MonoBehaviour, IDamage
         if (anim) { anim.Rebind(); anim.Update(0f); }
         ForceReviveForRestart();
     }
-
-    // ---------- Update ----------
-    void Update()
+    public void SetInputEnabled(bool state)
     {
-        // If HP just hit 0 and we haven't processed death yet, process now
-        if (!isDead && hp && !hp.isAlive) MarkDeadAndFreeze();
+        inputEnabled = state;
 
-        // Pause gate (but allow the death frame to go through above)
-        if ((gameManager.instance != null && gameManager.instance.isPaused) && !isDead)
+        if (!state && rb)
         {
+
 #if UNITY_6000_0_OR_NEWER
             rb.linearVelocity = Vector2.zero;
 #else
+        rb.velocity = Vector2.zero;
+#endif
+        }
+    }
+    // ---------- Update ----------
+    void Update()
+    {
+
+        if (!inputEnabled)
+        {
+            if (rb)
+            {
+#if UNITY_6000_0_OR_NEWER
+                rb.linearVelocity = Vector2.zero;
+#else
             rb.velocity = Vector2.zero;
+#endif
+            }
+            return; // Stops all movement and actions instantly
+        }
+
+        // If HP just hit 0 and we haven't processed death yet, process now
+        if (!isDead && hp && !hp.isAlive) MarkDeadAndFreeze();
+
+        // Pause gate
+        if (gameManager.instance != null && gameManager.instance.isPaused)
+        {
+            // Player input is already blocked by the main gate, but we ensure freeze here.
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = Vector2.zero;
+#else
+        rb.velocity = Vector2.zero;
 #endif
             return;
         }
 
-        // Dead = hard freeze
+        // Dead = hard freeze (This should ideally not be reached if MarkDeadAndFreeze() is working)
         if (isDead || (hp && !hp.isAlive))
         {
 #if UNITY_6000_0_OR_NEWER
             rb.linearVelocity = Vector2.zero;
 #else
-            rb.velocity = Vector2.zero;
+        rb.velocity = Vector2.zero;
 #endif
             moveDir = Vector2.zero;
             isAttacking = false;
@@ -140,6 +169,7 @@ public class playerController : MonoBehaviour, IDamage
         if (bufferTimer > 0f) bufferTimer -= Time.deltaTime;
         if (!isAttacking && comboTimer <= 0f && comboStep > 0) comboStep = 0;
     }
+
 
     // ---------- Mouse Aim ----------
     void UpdateAimFromMouse()

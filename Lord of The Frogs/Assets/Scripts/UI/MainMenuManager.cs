@@ -8,6 +8,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject creditsPanel;
     [SerializeField] private GameObject settingsMenuPanel;
 
+
     private void Start()
     {
 
@@ -39,6 +40,9 @@ public class MainMenuManager : MonoBehaviour
         }
 
         GateFlags.PlayLargeMapIntroGate = true;
+        gameManager.instance.menuPause.SetActive(false);
+        gameManager.instance.menuWin.SetActive(false);
+        gameManager.instance.menuLose.SetActive(false);
         SceneManager.LoadScene("Large_Map_1");
     }
     public void OpenCredits()
