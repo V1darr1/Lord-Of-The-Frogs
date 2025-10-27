@@ -17,8 +17,8 @@ public class gameManager : MonoBehaviour
     [Header("Menus")]
     public GameObject menuPause;
     public GameObject settingsMenu;
-    [SerializeField] GameObject menuWin;
-    [SerializeField] GameObject menuLose;
+    [SerializeField] public GameObject menuWin;
+    [SerializeField] public GameObject menuLose;
 
     [HideInInspector] public GameObject menuActive;
 
@@ -39,6 +39,8 @@ public class gameManager : MonoBehaviour
             instance = this;
             DontDestroyOnLoad(gameObject);
             if (player) DontDestroyOnLoad(player);
+
+
         }
         else
         {
@@ -201,6 +203,9 @@ public class gameManager : MonoBehaviour
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+
+        playerController pc = GameObject.FindFirstObjectByType<playerController>();
+        if (pc != null) pc.SetInputEnabled(false);
     }
 
     public void UnpauseGame()
@@ -210,7 +215,13 @@ public class gameManager : MonoBehaviour
         if (menuActive) menuActive.SetActive(false);
         menuActive = null;
 
-        Time.timeScale = timeScaleOrig;
+        Time.timeScale = timeScaleOrig > 0f ? timeScaleOrig : 1f;
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        playerController pc = GameObject.FindFirstObjectByType<playerController>();
+        if (pc != null) pc.SetInputEnabled(true);
     }
 
     public void OpenSettingsMenu()
@@ -221,6 +232,24 @@ public class gameManager : MonoBehaviour
         if (menuPause) menuPause.SetActive(false);
 
         PauseGame(settingsMenu);
+    }
+    public void CloseSettingsMenu()
+    {
+
+        if (menuActive == settingsMenu && menuPause)
+        {
+            //  Options -> Pause Menu. 
+            // hide settings and show pause
+            menuActive.SetActive(false);
+            menuPause.SetActive(true);
+            menuActive = menuPause;
+        }
+        else
+        {
+            //  Options -> Resume 
+
+            UnpauseGame();
+        }
     }
 
     public void ReturnToPauseMenu()
